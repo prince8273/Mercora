@@ -1,0 +1,193 @@
+.container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Time Range Selector */
+.timeRangeSelector {
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+}
+
+.timeRangeButton {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.timeRangeButton:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.timeRangeButton.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Custom Tooltip */
+.tooltip {
+  background-color: var(--bg-tooltip);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.tooltipLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-tooltip);
+  margin-bottom: var(--spacing-sm);
+}
+
+.tooltipContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tooltipItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+}
+
+.tooltipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tooltipName {
+  color: var(--text-tooltip);
+  opacity: 0.8;
+}
+
+.tooltipValue {
+  color: var(--text-tooltip);
+  font-weight: 600;
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+
+/* Custom Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.legendItem:hover {
+  background-color: var(--bg-secondary);
+}
+
+.legendItem:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.legendItemHidden {
+  opacity: 0.5;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  color: var(--text-primary);
+  user-select: none;
+}
+
+/* Dark mode */
+[data-theme='dark'] .container {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .timeRangeSelector {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .tooltip {
+  background-color: var(--bg-tooltip);
+  border-color: var(--border-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .timeRangeSelector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .timeRangeButton {
+    flex: 1;
+    padding: var(--spacing-sm);
+    font-size: 0.75rem;
+  }
+
+  .legend {
+    gap: var(--spacing-sm);
+  }
+
+  .legendItem {
+    font-size: 0.75rem;
+    padding: var(--spacing-xs);
+  }
+}

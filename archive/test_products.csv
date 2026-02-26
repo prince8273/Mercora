@@ -1,0 +1,21 @@
+sku,name,category,price,currency,marketplace,inventory_level
+PROD-001,Wireless Bluetooth Headphones,Electronics,79.99,USD,Amazon,145
+ELEC-123,4K Smart TV 55 inch,Electronics,449.99,USD,Walmart,23
+CLOTH-045,Men's Cotton T-Shirt Blue,Clothing,19.99,USD,Amazon,320
+HOME-078,Stainless Steel Coffee Maker,Home & Garden,89.99,USD,eBay,67
+SPORT-012,Yoga Mat Premium Non-Slip,Sports,34.99,USD,Amazon,8
+BOOK-234,The Art of Programming,Books,45.00,USD,Amazon,156
+TOY-089,LEGO City Building Set,Toys,59.99,USD,Walmart,0
+ELEC-456,USB-C Fast Charging Cable,Electronics,12.99,USD,eBay,450
+CLOTH-112,Women's Running Shoes,Clothing,89.99,USD,Amazon,42
+HOME-203,Ceramic Plant Pot Set,Home & Garden,24.99,USD,Etsy,89
+SPORT-067,Adjustable Dumbbell Set,Sports,129.99,USD,Walmart,15
+BOOK-445,Cooking Mastery Cookbook,Books,32.50,USD,Amazon,203
+TOY-156,Remote Control Racing Car,Toys,44.99,USD,Amazon,5
+ELEC-789,Portable Power Bank 20000mAh,Electronics,39.99,USD,eBay,178
+CLOTH-223,Denim Jeans Classic Fit,Clothing,54.99,USD,Walmart,95
+HOME-334,Bamboo Cutting Board Large,Home & Garden,28.99,USD,Amazon,234
+SPORT-145,Tennis Racket Professional,Sports,119.99,USD,eBay,31
+BOOK-567,Mystery Novel Collection,Books,18.99,USD,Amazon,412
+TOY-278,Educational Puzzle 1000 Pieces,Toys,22.99,USD,Etsy,67
+ELEC-901,Wireless Gaming Mouse,Electronics,64.99,USD,Amazon,103

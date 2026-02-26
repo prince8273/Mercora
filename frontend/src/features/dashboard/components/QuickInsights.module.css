@@ -1,0 +1,354 @@
+.container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 var(--spacing-sm);
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+
+.content {
+  padding: 0;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem var(--spacing-lg);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 4rem;
+  height: 4rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-md);
+}
+
+.emptyText {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.emptySubtext {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin: 0;
+  max-width: 300px;
+}
+
+/* Insight List */
+.insightList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.insightItem {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.insightItem:last-child {
+  border-bottom: none;
+}
+
+.insightButton {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.insightButton:hover {
+  background-color: var(--bg-secondary);
+}
+
+.insightButton:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.insightHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-secondary);
+}
+
+.iconWrapper svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Icon type colors */
+.icon-trend {
+  background-color: var(--primary-alpha);
+  color: var(--primary-color);
+}
+
+.icon-warning {
+  background-color: var(--warning-alpha);
+  color: var(--warning-color);
+}
+
+.icon-opportunity {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.icon-alert {
+  background-color: var(--error-alpha);
+  color: var(--error-color);
+}
+
+.icon-success {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.icon-info {
+  background-color: var(--info-alpha);
+  color: var(--info-color);
+}
+
+.insightContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.insightTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.4;
+}
+
+.insightSummary {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.expandIcon {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform 0.2s ease;
+}
+
+.expandIcon.expanded {
+  transform: rotate(180deg);
+}
+
+/* Insight Details */
+.insightDetails {
+  padding: 0 var(--spacing-lg) var(--spacing-lg) 5rem;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailsText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.metricLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metricValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.recommendation {
+  padding: var(--spacing-md);
+  background-color: var(--primary-alpha);
+  border-left: 3px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.recommendation strong {
+  color: var(--primary-color);
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Dark mode */
+[data-theme='dark'] .container {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .insightButton:hover {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .metrics {
+  background-color: var(--bg-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-md);
+  }
+
+  .insightHeader {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .iconWrapper {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .iconWrapper svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .insightDetails {
+    padding: 0 var(--spacing-md) var(--spacing-md) 3.5rem;
+  }
+
+  .insightTitle {
+    font-size: 0.875rem;
+  }
+
+  .insightSummary {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .insightDetails {
+    padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
+  }
+
+  .emptyState {
+    padding: 2rem var(--spacing-md);
+  }
+
+  .emptyIcon {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .insightButton,
+  .expandIcon {
+    transition: none;
+  }
+
+  .insightDetails {
+    animation: none;
+  }
+}
+
+.confidenceWrapper {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: var(--spacing-md);
+}

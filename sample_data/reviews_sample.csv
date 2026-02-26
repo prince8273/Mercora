@@ -1,0 +1,11 @@
+product_sku,rating,review_text,reviewer_name,review_date
+PROD001,5,Great mouse! Very comfortable and responsive.,John Doe,2024-01-15T10:30:00
+PROD001,4,Good quality but a bit pricey.,Jane Smith,2024-01-16T14:20:00
+PROD002,5,Perfect cable length and fast charging.,Mike Johnson,2024-01-17T09:15:00
+PROD003,5,Sturdy and adjustable. Highly recommend!,Sarah Williams,2024-01-18T16:45:00
+PROD004,4,Nice keyboard but keys are a bit loud.,David Brown,2024-01-19T11:00:00
+PROD005,5,Excellent lighting and modern design.,Emily Davis,2024-01-20T13:30:00
+PROD006,3,Fits well but material feels cheap.,Robert Wilson,2024-01-21T15:10:00
+PROD007,5,Amazing sound quality for the price!,Lisa Anderson,2024-01-22T10:50:00
+PROD008,4,Clear video but software could be better.,James Taylor,2024-01-23T12:20:00
+PROD009,5,Perfect size and great color accuracy.,Maria Garcia,2024-01-24T14:40:00

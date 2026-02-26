@@ -1,0 +1,11 @@
+sku,name,category,price,currency,marketplace,inventory_level
+PROD001,Wireless Mouse,Electronics,29.99,USD,Amazon,150
+PROD002,USB-C Cable,Electronics,12.99,USD,Amazon,300
+PROD003,Laptop Stand,Office,49.99,USD,Amazon,75
+PROD004,Mechanical Keyboard,Electronics,89.99,USD,Amazon,50
+PROD005,Desk Lamp,Office,34.99,USD,Amazon,120
+PROD006,Phone Case,Accessories,19.99,USD,Amazon,200
+PROD007,Bluetooth Speaker,Electronics,59.99,USD,Amazon,80
+PROD008,Webcam HD,Electronics,79.99,USD,Amazon,45
+PROD009,Monitor 24inch,Electronics,199.99,USD,Amazon,30
+PROD010,Ergonomic Chair,Office,299.99,USD,Amazon,25

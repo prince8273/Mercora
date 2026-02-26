@@ -1,0 +1,289 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.container:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Priority badge */
+.priorityBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.priority-red {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.priority-yellow {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priority-green {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.priority-gray {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Effort and Impact badges */
+.effortBadge,
+.impactBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  text-transform: capitalize;
+}
+
+/* Title and description */
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Reasoning */
+.reasoning {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0.375rem;
+}
+
+.reasoningHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reasoningIcon {
+  width: 1rem;
+  height: 1rem;
+  color: #3b82f6;
+}
+
+.reasoningLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.reasoningText {
+  font-size: 0.875rem;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Expanded content */
+.expandedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Steps */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stepsTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.stepsList {
+  margin: 0;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.stepItem {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Details */
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.detailValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.expandButton:hover {
+  color: #111827;
+}
+
+.expandIcon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.expandIcon.expanded {
+  transform: rotate(180deg);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rejectButton {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.rejectButton:hover {
+  background-color: #fee2e2;
+}
+
+.snoozeButton {
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.snoozeButton:hover {
+  background-color: #f3f4f6;
+}
+
+.acceptButton {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.acceptButton:hover {
+  background-color: #2563eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .expandButton {
+    justify-content: center;
+  }
+
+  .actionButtons {
+    width: 100%;
+  }
+
+  .actionButtons button {
+    flex: 1;
+  }
+}

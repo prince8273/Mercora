@@ -1,0 +1,151 @@
+.container {
+  margin-bottom: var(--spacing-lg);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+}
+
+.modeButton {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.modeButton:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background-color: var(--primary-alpha);
+}
+
+.modeButton:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.modeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modeButton.active {
+  border-color: var(--primary-color);
+  background-color: var(--primary-alpha);
+}
+
+.modeIcon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.modeButton.active .modeIcon {
+  color: var(--primary-color);
+}
+
+.modeIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.modeContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.modeLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modeDescription {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.checkmark {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-color);
+  border-radius: var(--radius-full);
+  color: white;
+}
+
+.checkmark svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Dark mode */
+[data-theme='dark'] .modeButton {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .modeButton:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .modeButton.active {
+  background-color: var(--bg-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modeButton {
+    padding: var(--spacing-sm);
+  }
+
+  .modeIcon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .modeIcon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .modeLabel {
+    font-size: 0.875rem;
+  }
+
+  .modeDescription {
+    font-size: 0.75rem;
+  }
+}

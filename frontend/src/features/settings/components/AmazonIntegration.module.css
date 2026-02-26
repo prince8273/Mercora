@@ -1,0 +1,319 @@
+.container {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.statusCard {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border-left: 4px solid;
+}
+
+.statusCard.connected {
+  border-left-color: #10b981;
+  background: #d1fae5;
+}
+
+.statusCard.disconnected {
+  border-left-color: #ef4444;
+  background: #fee2e2;
+}
+
+.statusCard.testing {
+  border-left-color: #f59e0b;
+  background: #fef3c7;
+}
+
+.statusHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.statusIcon {
+  font-size: 24px;
+}
+
+.statusText {
+  flex: 1;
+}
+
+.statusTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.statusSubtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.statusActions {
+  display: flex;
+  gap: 8px;
+}
+
+.statusButton {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.statusButton:hover {
+  background: var(--bg-hover);
+}
+
+.statusButton.primary {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.statusButton.primary:hover {
+  background: var(--primary-dark);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.required {
+  color: #ef4444;
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: monospace;
+  transition: all 0.2s;
+}
+
+.input:hover {
+  border-color: var(--primary-color);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.input.password {
+  letter-spacing: 2px;
+}
+
+.description {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.syncSettings {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-top: 24px;
+}
+
+.syncTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.syncOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.syncOption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: 6px;
+}
+
+.syncOptionLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.syncOptionTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.syncOptionDescription {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.lastSync {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.button {
+  padding: 10px 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background: var(--bg-hover);
+}
+
+.button.primary {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.button.primary:hover {
+  background: var(--primary-dark);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  padding: 12px 16px;
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.successMessage {
+  padding: 12px 16px;
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  color: #065f46;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .statusHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .statusActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .statusButton {
+    width: 100%;
+  }
+
+  .syncOption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .select {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+}
