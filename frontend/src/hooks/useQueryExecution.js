@@ -41,10 +41,17 @@ export const useQueryExecution = (queryId) => {
       wsManager.connect();
     }
 
+    // For synchronous query execution (current MVP), skip polling
+    // Since backend returns results immediately, there's no async progress to track
     if (isPollingFallback) {
-      console.log('WebSocket unavailable. Using polling mode for query progress.');
-      // Implement polling fallback
-      startPolling(queryId);
+      console.log('WebSocket unavailable. Query results returned synchronously (no polling needed).');
+      // Don't start polling - queries complete immediately
+      // Just mark as completed after a brief delay
+      setTimeout(() => {
+        setProgress(100);
+        setStatus('completed');
+        setCurrentActivity('Query completed');
+      }, 100);
       return;
     }
 
@@ -104,40 +111,6 @@ export const useQueryExecution = (queryId) => {
       queryIdRef.current = null;
     };
   }, [queryId, queryClient, invalidateQueryCache]);
-
-  // Polling fallback when WebSocket is unavailable
-  const startPolling = (qId) => {
-    const pollInterval = setInterval(async () => {
-      try {
-        // Fetch query status from API
-        const result = await queryClient.fetchQuery(
-          queryKeys.queries.detail(qId)
-        );
-
-        if (result) {
-          setProgress(result.progress || 0);
-          setStatus(result.status || 'active');
-          setCurrentActivity(result.currentActivity || '');
-          setEstimatedTime(result.estimatedTime || null);
-
-          if (result.status === 'completed') {
-            clearInterval(pollInterval);
-            setProgress(100);
-            setStatus('completed');
-          } else if (result.status === 'error') {
-            clearInterval(pollInterval);
-            setStatus('error');
-            setError(result.error || 'Query execution failed');
-          }
-        }
-      } catch (err) {
-        console.error('Polling error:', err);
-      }
-    }, 2000); // Poll every 2 seconds
-
-    // Cleanup
-    return () => clearInterval(pollInterval);
-  };
 
   const reset = useCallback(() => {
     setProgress(0);

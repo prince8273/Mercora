@@ -175,3 +175,148 @@
     font-size: 0.75rem;
   }
 }
+
+/* Expandable Details Section */
+.detailsSection {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.expandButton:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
+.expandIcon {
+  transition: transform 0.2s ease;
+}
+
+.expandIcon.expanded {
+  transform: rotate(180deg);
+}
+
+.detailsList {
+  margin-top: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.detailItem {
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.detailItem:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xs);
+}
+
+.detailSku {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.detailName {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.detailDescription {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.detailBadge {
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.badge-warning {
+  background-color: var(--warning-alpha);
+  color: var(--warning-color);
+}
+
+.badge-danger {
+  background-color: var(--error-alpha);
+  color: var(--error-color);
+}
+
+.badge-default {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.detailMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.metric {
+  display: flex;
+  gap: var(--spacing-xs);
+  font-size: 0.8125rem;
+}
+
+.metricLabel {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.metricValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Dark mode for details */
+[data-theme='dark'] .detailItem {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .expandButton {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .expandButton:hover {
+  background-color: var(--bg-primary);
+}

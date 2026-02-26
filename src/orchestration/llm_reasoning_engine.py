@@ -211,11 +211,7 @@ class LLMReasoningEngine:
             QueryIntent.DEMAND_FORECAST: [AgentType.DEMAND_FORECAST],
             QueryIntent.COMPETITIVE_INTELLIGENCE: [AgentType.PRICING],
             QueryIntent.INVENTORY_OPTIMIZATION: [AgentType.DEMAND_FORECAST],
-            QueryIntent.PRODUCT_PERFORMANCE: [
-                AgentType.PRICING,
-                AgentType.SENTIMENT,
-                AgentType.DEMAND_FORECAST
-            ],
+            QueryIntent.PRODUCT_PERFORMANCE: [AgentType.SENTIMENT],  # Changed: only sentiment for product performance
             QueryIntent.MULTI_AGENT: [
                 AgentType.PRICING,
                 AgentType.SENTIMENT,
@@ -223,7 +219,7 @@ class LLMReasoningEngine:
             ],
         }
         
-        agents = intent_agent_map.get(intent, [])
+        agents = intent_agent_map.get(intent, [AgentType.SENTIMENT])  # Default to sentiment only
         
         # Check if parameters specify specific agents
         if "agents" in parameters:
