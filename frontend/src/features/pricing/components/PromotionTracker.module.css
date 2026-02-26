@@ -1,0 +1,254 @@
+.container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.count {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.content {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Promotion Card */
+.promotionCard {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  transition: all 0.2s ease;
+}
+
+.promotionCard:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.promotionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.promotionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.promotionName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.promotionMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.promotionDates {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.promotionDiscount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--error-alpha);
+  border-radius: var(--radius-md);
+  min-width: 70px;
+}
+
+.discountValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--error-color);
+  line-height: 1;
+}
+
+.discountLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--error-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Metrics Grid */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metricValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.metricValue.positive {
+  color: var(--success-color);
+}
+
+.metricValue.negative {
+  color: var(--error-color);
+}
+
+/* Products */
+.products {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.productsLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.productsCount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Empty/Error States */
+.emptyState,
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 4rem;
+  height: 4rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-md);
+}
+
+.emptyText {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Dark mode */
+[data-theme='dark'] .container {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .promotionCard {
+  background-color: var(--bg-tertiary);
+}
+
+[data-theme='dark'] .metricsGrid {
+  background-color: var(--bg-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-md);
+  }
+
+  .content {
+    padding: var(--spacing-md);
+    max-height: 500px;
+  }
+
+  .promotionCard {
+    padding: var(--spacing-md);
+  }
+
+  .promotionHeader {
+    flex-direction: column;
+  }
+
+  .promotionDiscount {
+    align-self: flex-start;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .emptyIcon {
+    width: 3rem;
+    height: 3rem;
+  }
+}

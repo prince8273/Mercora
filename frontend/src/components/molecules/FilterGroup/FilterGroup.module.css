@@ -1,0 +1,158 @@
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.container {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trigger:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg-secondary);
+}
+
+.trigger:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-alpha);
+}
+
+.chevron {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--text-tertiary);
+  transition: transform 0.2s ease;
+}
+
+.trigger[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.option:hover {
+  background-color: var(--bg-secondary);
+}
+
+.option[aria-selected='true'] {
+  background-color: var(--primary-alpha);
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: currentColor;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.removeButton:hover {
+  opacity: 1;
+}
+
+.removeButton svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.clearAll {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.clearAll:hover {
+  opacity: 0.8;
+}
+
+/* Dark mode */
+[data-theme='dark'] .trigger {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .dropdown {
+  background-color: var(--bg-secondary);
+}

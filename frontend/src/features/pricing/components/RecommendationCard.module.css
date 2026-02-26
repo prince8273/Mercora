@@ -1,0 +1,224 @@
+.container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: all 0.2s ease;
+}
+
+.container:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.productInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.productName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.priceComparison {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.currentPrice {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  font-family: var(--font-mono);
+}
+
+.arrow {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.recommendedPrice {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: var(--font-mono);
+}
+
+.priceChange {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+.priceChange.increase {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.priceChange.decrease {
+  background-color: var(--error-alpha);
+  color: var(--error-color);
+}
+
+/* Confidence Badge */
+.confidence {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  min-width: 80px;
+}
+
+.confidenceLabel {
+  font-size: 0.75rem;
+  color: inherit;
+  opacity: 0.8;
+  margin-bottom: var(--spacing-xs);
+}
+
+.confidenceValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: inherit;
+}
+
+.confidenceHigh {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.confidenceMedium {
+  background-color: var(--warning-alpha);
+  color: var(--warning-color);
+}
+
+.confidenceLow {
+  background-color: var(--error-alpha);
+  color: var(--error-color);
+}
+
+/* Impact */
+.impact {
+  display: flex;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.impactItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.impactLabel {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.impactValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.impactValue.positive {
+  color: var(--success-color);
+}
+
+.impactValue.negative {
+  color: var(--error-color);
+}
+
+/* Reasoning */
+.reasoning {
+  padding: var(--spacing-md);
+  background-color: var(--info-alpha);
+  border-left: 3px solid var(--info-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.reasoningTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.reasoningText {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+/* Dark mode */
+[data-theme='dark'] .container {
+  background-color: var(--bg-secondary);
+}
+
+[data-theme='dark'] .impact {
+  background-color: var(--bg-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .confidence {
+    align-self: flex-start;
+  }
+
+  .priceComparison {
+    font-size: 0.875rem;
+  }
+
+  .currentPrice {
+    font-size: 1rem;
+  }
+
+  .recommendedPrice {
+    font-size: 1.125rem;
+  }
+
+  .impact {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

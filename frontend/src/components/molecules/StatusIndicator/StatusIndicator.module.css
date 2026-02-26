@@ -1,0 +1,67 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Sizes */
+.sm {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.md {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.lg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Status colors */
+.active {
+  background-color: var(--primary-color);
+}
+
+.idle {
+  background-color: var(--text-tertiary);
+}
+
+.success {
+  background-color: var(--success-color);
+}
+
+.warning {
+  background-color: var(--warning-color);
+}
+
+.error {
+  background-color: var(--error-color);
+}
+
+/* Pulse animation */
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}

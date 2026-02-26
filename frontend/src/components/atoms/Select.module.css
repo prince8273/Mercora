@@ -1,0 +1,57 @@
+.selectWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.required {
+  color: var(--error);
+  margin-left: 0.25rem;
+}
+
+.select {
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.select:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-alpha);
+}
+
+.select.error {
+  border-color: var(--error);
+}
+
+.select.error:focus {
+  box-shadow: 0 0 0 3px var(--error-alpha);
+}
+
+.select.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--bg-secondary);
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: var(--error);
+}

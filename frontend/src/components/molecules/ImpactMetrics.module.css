@@ -1,0 +1,157 @@
+.container {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+/* Layout variants */
+.layout-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.layout-vertical {
+  flex-direction: column;
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Metric */
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #6b7280;
+}
+
+.iconWrapper svg {
+  width: 100%;
+  height: 100%;
+}
+
+.metricLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.metricValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.change.positive {
+  color: #059669;
+}
+
+.change.negative {
+  color: #dc2626;
+}
+
+.iconUp,
+.iconDown {
+  width: 1rem;
+  height: 1rem;
+}
+
+.iconUp {
+  color: #059669;
+}
+
+.iconDown {
+  color: #dc2626;
+}
+
+.timeframe {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Risk badge */
+.riskBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.risk-green {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.risk-yellow {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.risk-red {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.risk-gray {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.riskDescription {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .layout-horizontal {
+    flex-direction: column;
+  }
+
+  .metric {
+    min-width: 100%;
+  }
+
+  .value {
+    font-size: 1.25rem;
+  }
+}

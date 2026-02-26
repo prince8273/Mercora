@@ -1,0 +1,94 @@
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1000;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: var(--bg-tooltip);
+  color: var(--text-tooltip);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease;
+}
+
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Position: Top */
+.top {
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.top .arrow {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0.375rem 0.375rem 0 0.375rem;
+  border-color: var(--bg-tooltip) transparent transparent transparent;
+}
+
+/* Position: Bottom */
+.bottom {
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottom .arrow {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 0.375rem 0.375rem 0.375rem;
+  border-color: transparent transparent var(--bg-tooltip) transparent;
+}
+
+/* Position: Left */
+.left {
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.left .arrow {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 0.375rem 0 0.375rem 0.375rem;
+  border-color: transparent transparent transparent var(--bg-tooltip);
+}
+
+/* Position: Right */
+.right {
+  left: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.right .arrow {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 0.375rem 0.375rem 0.375rem 0;
+  border-color: transparent var(--bg-tooltip) transparent transparent;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

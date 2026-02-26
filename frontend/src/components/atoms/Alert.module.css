@@ -1,0 +1,71 @@
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.message {
+  font-size: 0.875rem;
+}
+
+.closeButton {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Variants */
+.info {
+  background-color: var(--info-alpha);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+.success {
+  background-color: var(--success-alpha);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.warning {
+  background-color: var(--warning-alpha);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.error {
+  background-color: var(--error-alpha);
+  border-color: var(--error);
+  color: var(--error);
+}
