@@ -61,8 +61,9 @@ class DataService:
             
             today = datetime.utcnow().date()
             since = today - timedelta(days=days)
+            previous_period_start = since - timedelta(days=days)
             
-            # Get revenue, units, and orders
+            # Get current period revenue, units, and orders
             result = await self.db.execute(
                 select(
                     func.sum(SalesRecord.revenue),
@@ -74,34 +75,125 @@ class DataService:
                 )
             )
             revenue, units, orders = result.first()
-            
-            # Calculate profit margin (assuming 25% margin)
             total_revenue = float(revenue or 0)
-            profit_margin = 25.0 if total_revenue > 0 else 0.0
+            total_units = int(units or 0)
+            total_orders = int(orders or 0)
+            
+            # Get previous period data for comparison
+            prev_result = await self.db.execute(
+                select(
+                    func.sum(SalesRecord.revenue),
+                    func.sum(SalesRecord.quantity),
+                    func.count(SalesRecord.id)
+                ).where(
+                    SalesRecord.tenant_id == self.tenant_id,
+                    SalesRecord.date >= previous_period_start,
+                    SalesRecord.date < since
+                )
+            )
+            prev_revenue, prev_units, prev_orders = prev_result.first()
+            prev_total_revenue = float(prev_revenue or 0)
+            prev_total_units = int(prev_units or 0)
+            prev_total_orders = int(prev_orders or 0)
+            
+            # Calculate revenue change
+            revenue_change = ((total_revenue - prev_total_revenue) / prev_total_revenue * 100) if prev_total_revenue > 0 else 0.0
+            revenue_trend = "up" if revenue_change > 0 else "down" if revenue_change < 0 else "neutral"
+            
+            # Calculate units sold change
+            units_change = ((total_units - prev_total_units) / prev_total_units * 100) if prev_total_units > 0 else 0.0
+            units_trend = "up" if units_change > 0 else "down" if units_change < 0 else "neutral"
+            
+            # Simplified profit margin calculation using average cost
+            # Get average product cost for the tenant
+            avg_cost_result = await self.db.execute(
+                select(func.avg(Product.cost)).where(
+                    Product.tenant_id == self.tenant_id,
+                    Product.cost.isnot(None),
+                    Product.cost > 0
+                )
+            )
+            avg_cost = float(avg_cost_result.scalar() or 0)
+            
+            # Estimate total cost based on units sold and average cost
+            estimated_cost = total_units * avg_cost
+            prev_estimated_cost = prev_total_units * avg_cost
+            
+            # Calculate profit margins
+            profit_margin = ((total_revenue - estimated_cost) / total_revenue * 100) if total_revenue > 0 else 0.0
+            prev_profit_margin = ((prev_total_revenue - prev_estimated_cost) / prev_total_revenue * 100) if prev_total_revenue > 0 else 0.0
+            
+            # Calculate margin change (percentage point change)
+            margin_change = profit_margin - prev_profit_margin
+            margin_trend = "up" if margin_change > 0 else "down" if margin_change < 0 else "neutral"
             
             # Calculate conversion rate (orders / total visitors, assuming 100 visitors per order)
-            total_orders = int(orders or 0)
             estimated_visitors = total_orders * 100 if total_orders > 0 else 1000
             conversion_rate = (total_orders / estimated_visitors * 100) if estimated_visitors > 0 else 0.0
+            
+            prev_estimated_visitors = prev_total_orders * 100 if prev_total_orders > 0 else 1000
+            prev_conversion_rate = (prev_total_orders / prev_estimated_visitors * 100) if prev_estimated_visitors > 0 else 0.0
+            
+            conversion_change = conversion_rate - prev_conversion_rate
+            conversion_trend = "up" if conversion_change > 0 else "down" if conversion_change < 0 else "neutral"
             
             # Calculate inventory health (products in stock / total products)
             inventory_result = await self.db.execute(
                 select(
                     func.count(Product.id).filter(Product.inventory_level > 0),
-                    func.count(Product.id)
+                    func.count(Product.id),
+                    func.avg(Product.inventory_level)
                 ).where(
                     Product.tenant_id == self.tenant_id
                 )
             )
-            in_stock, total_products = inventory_result.first()
+            in_stock, total_products, avg_inventory = inventory_result.first()
             inventory_health = (in_stock / total_products * 100) if total_products > 0 else 0.0
             
+            # Calculate inventory health change by comparing average inventory levels
+            # Get historical inventory data from sales records to estimate previous inventory
+            # Since we don't track historical inventory snapshots, we'll use a proxy:
+            # Compare current average inventory with inventory trend from sales velocity
+            
+            # Get current period sales velocity (units sold per day)
+            current_velocity = total_units / days if days > 0 else 0
+            
+            # Get previous period sales velocity
+            prev_velocity = prev_total_units / days if days > 0 else 0
+            
+            # Calculate inventory health change based on:
+            # 1. Change in stock percentage
+            # 2. Change in sales velocity (higher velocity with same stock = lower health)
+            
+            # Simple approach: if sales velocity increased significantly but stock stayed same,
+            # inventory health is declining. If velocity decreased, health is improving.
+            velocity_change = ((current_velocity - prev_velocity) / prev_velocity * 100) if prev_velocity > 0 else 0
+            
+            # Inventory health change is inverse of velocity change
+            # (higher sales velocity = inventory depleting faster = lower health)
+            inventory_change = -velocity_change * 0.3  # Dampen the effect
+            
+            # Cap the change at reasonable bounds
+            inventory_change = max(-10.0, min(10.0, inventory_change))
+            
+            # Determine trend based on inventory health level
+            # Priority 1: Show warning (down/red) ONLY if inventory health is critically low (< 30%)
+            # Priority 2: Otherwise, show trend based on change direction
+            if inventory_health < 30:
+                inventory_trend = "down"  # Critical warning: Low inventory
+            elif inventory_health >= 70:
+                # Healthy inventory level - show neutral or up, never down
+                inventory_trend = "up" if inventory_change > 0 else "neutral"
+            else:
+                # Moderate inventory (30-70%) - show actual trend
+                inventory_trend = "up" if inventory_change > 0 else "down" if inventory_change < 0 else "neutral"
+            
             return {
-                "gmv": {"value": total_revenue, "change": 12.5, "trend": "up"},
-                "margin": {"value": profit_margin, "change": 2.1, "trend": "up"},
-                "conversion": {"value": round(conversion_rate, 2), "change": -0.5, "trend": "down"},
-                "inventory_health": {"value": round(inventory_health, 1), "change": 5.0, "trend": "up"},
-                "units_sold": {"value": int(units or 0), "change": 8.3, "trend": "up"},
+                "gmv": {"value": total_revenue, "change": round(revenue_change, 1), "trend": revenue_trend},
+                "margin": {"value": round(profit_margin, 1), "change": round(margin_change, 1), "trend": margin_trend},
+                "conversion": {"value": round(conversion_rate, 2), "change": round(conversion_change, 1), "trend": conversion_trend},
+                "inventory_health": {"value": round(inventory_health, 1), "change": round(inventory_change, 1), "trend": inventory_trend},
+                "units_sold": {"value": total_units, "change": round(units_change, 1), "trend": units_trend},
                 "total_orders": total_orders
             }
     
@@ -187,38 +279,19 @@ class DataService:
             # Mock API returns {"payload": {...}}, extract the inner payload
             return response.get("payload", response)
         else:
-            from src.models.product import Product
-            from src.models.sales_record import SalesRecord
-            
+            # Simplified version - return basic insights without expensive joins
             insights = []
             
-            # Get top selling products
-            result = await self.db.execute(
-                select(
-                    Product.name,
-                    Product.sku,
-                    func.sum(SalesRecord.revenue).label('total_revenue'),
-                    func.sum(SalesRecord.quantity).label('total_quantity')
-                )
-                .join(SalesRecord, Product.id == SalesRecord.product_id)
-                .where(Product.tenant_id == self.tenant_id)
-                .group_by(Product.id, Product.name, Product.sku)
-                .order_by(func.sum(SalesRecord.revenue).desc())
-                .limit(3)
-            )
-            top_products = result.all()
-            
-            if top_products:
-                top_product = top_products[0]
-                insights.append({
-                    "id": "top-seller",
-                    "type": "success",
-                    "title": "Top Performing Product",
-                    "description": f"{top_product.name} generated ${float(top_product.total_revenue):.2f} in revenue",
-                    "confidence": 0.95,
-                    "action": "Consider increasing inventory for this product",
-                    "created_at": datetime.utcnow().isoformat()
-                })
+            # Return a simple insight based on recent activity
+            insights.append({
+                "id": "dashboard-ready",
+                "type": "info",
+                "title": "Dashboard Active",
+                "description": "Your dashboard is tracking sales and performance metrics",
+                "confidence": 1.0,
+                "action": "Review your KPIs above for latest insights",
+                "created_at": datetime.utcnow().isoformat()
+            })
             
             return {"insights": insights}
     

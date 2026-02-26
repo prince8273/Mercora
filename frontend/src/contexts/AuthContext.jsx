@@ -36,7 +36,18 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      console.log('Starting login process...')
+      console.log('Starting login process for:', email)
+      
+      // Clear any existing data first
+      localStorage.removeItem('token')
+      localStorage.removeItem('tokenType')
+      localStorage.removeItem('user')
+      localStorage.removeItem('tenantId')
+      localStorage.removeItem('tenant')
+      setUser(null)
+      setTenant(null)
+      setIsAuthenticated(false)
+      console.log('Cleared previous session data')
       
       // Step 1: Login and get token
       const tokenResponse = await authService.login(email, password)
@@ -56,7 +67,12 @@ export function AuthProvider({ children }) {
       // Step 3: Fetch user data using the token (pass token directly)
       console.log('Fetching user data...')
       const userData = await authService.getCurrentUser(access_token)
-      console.log('User data received:', { email: userData.email, id: userData.id })
+      console.log('User data received:', { 
+        email: userData.email, 
+        id: userData.id,
+        full_name: userData.full_name,
+        tenant_id: userData.tenant_id
+      })
 
       // Step 4: Store user data
       localStorage.setItem('user', JSON.stringify(userData))
@@ -68,7 +84,7 @@ export function AuthProvider({ children }) {
 
       setUser(userData)
       setIsAuthenticated(true)
-      console.log('Login successful!')
+      console.log('Login successful! User set:', userData.email)
 
       return { success: true }
     } catch (error) {

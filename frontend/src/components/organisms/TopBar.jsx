@@ -5,8 +5,11 @@ import './TopBar.css'
 export default function TopBar() {
   const { user, logout } = useAuth()
 
+  // Force re-render when user changes
+  console.log('TopBar rendering with user:', user?.email)
+
   return (
-    <header className="topbar">
+    <header className="topbar" key={user?.id}>
       <div className="topbar-left">
         <h1 className="topbar-logo">E-commerce Intelligence</h1>
       </div>
@@ -30,11 +33,11 @@ export default function TopBar() {
         <div className="user-menu">
           <button className="user-button">
             <User size={20} />
-            <span className="user-name">{user?.full_name || 'User'}</span>
+            <span className="user-name">{user?.full_name || user?.email || 'User'}</span>
           </button>
           <div className="user-dropdown">
             <div className="user-info">
-              <p className="user-email">{user?.email}</p>
+              <p className="user-email">{user?.email || 'No email'}</p>
               <p className="user-role">
                 {user?.is_superuser ? 'Superuser' : 'User'}
               </p>

@@ -32,7 +32,19 @@ export const dashboardService = {
    * Get KPI metrics (alias for compatibility)
    */
   async getKPIMetrics(timeRange = '30d') {
-    const response = await apiClient.get('/api/v1/dashboard/kpis')
+    // Convert timeRange to days
+    const daysMap = {
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      '1y': 365,
+      'last_year': 365
+    };
+    const days = daysMap[timeRange] || 30;
+    
+    const response = await apiClient.get('/api/v1/dashboard/kpis', {
+      params: { days }
+    })
     return response
   },
 
@@ -54,8 +66,18 @@ export const dashboardService = {
    * Get trend data (alias for compatibility)
    */
   async getTrendData(metric, timeRange = '30d') {
-    const params = { days: timeRange === '30d' ? 30 : 7 }
-    const response = await apiClient.get('/api/v1/dashboard/trends', { params })
+    // Convert timeRange to days
+    const daysMap = {
+      '7d': 7,
+      '30d': 30,
+      '60d': 60,
+      '90d': 90,
+      '1y': 365,
+      '365d': 365
+    };
+    const days = daysMap[timeRange] || 30;
+    
+    const response = await apiClient.get('/api/v1/dashboard/trends', { params: { days } })
     return response
   },
 

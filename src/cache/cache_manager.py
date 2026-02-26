@@ -88,17 +88,31 @@ class CacheManager:
         
         if self._redis is None:
             try:
+                # Add connection timeout to prevent hanging
                 self._redis = await redis.from_url(
                     self.redis_url,
                     encoding="utf-8",
-                    decode_responses=True
+                    decode_responses=True,
+                    socket_connect_timeout=5,  # 5 second connection timeout
+                    socket_timeout=5,  # 5 second operation timeout
+                    retry_on_timeout=False
                 )
-                await self._redis.ping()
+                
+                # Test connection with timeout
+                import asyncio
+                await asyncio.wait_for(self._redis.ping(), timeout=5.0)
                 
                 # Configure Redis for LRU eviction
                 await self._configure_lru_eviction()
                 
                 logger.info("Redis cache connected successfully with LRU eviction")
+            except asyncio.TimeoutError:
+                logger.error(f"Redis connection timeout - server not reachable at {self.redis_url}")
+                if self.use_memory_fallback:
+                    logger.warning("Using in-memory cache fallback")
+                else:
+                    logger.warning("Continuing without cache")
+                self._redis = None
             except Exception as e:
                 logger.error(f"Failed to connect to Redis: {e}")
                 if self.use_memory_fallback:

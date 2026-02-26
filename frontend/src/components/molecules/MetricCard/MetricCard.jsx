@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '../../atoms/Skeleton';
+import { formatCurrency } from '../../../utils/currency';
 import styles from './MetricCard.module.css';
 
 export const MetricCard = ({ 
@@ -11,6 +12,7 @@ export const MetricCard = ({
   format = 'number', // 'currency', 'percentage', 'number'
   icon,
   className = '',
+  period = 'last period', // e.g., 'last 7 days', 'last 30 days', 'last year'
   ...props 
 }) => {
   if (loading) {
@@ -36,12 +38,10 @@ export const MetricCard = ({
     
     switch (format) {
       case 'currency':
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
+        return formatCurrency(numVal, {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
-        }).format(numVal);
+        });
       
       case 'percentage':
         return `${numVal.toFixed(1)}%`;
@@ -102,7 +102,7 @@ export const MetricCard = ({
       <div className={styles.body}>
         <div className={styles.value}>{formatValue(value)}</div>
         {change !== null && change !== undefined && (
-          <div className={styles.subtitle}>vs last period</div>
+          <div className={styles.subtitle}>vs {period}</div>
         )}
       </div>
     </div>
