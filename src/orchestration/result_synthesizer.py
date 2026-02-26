@@ -15,6 +15,7 @@ Features:
 - Analytical database storage
 """
 import logging
+import json
 from typing import List, Dict, Any, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -265,6 +266,64 @@ class ResultSynthesizer:
         
         # Get agent confidence from result
         agent_confidence = result.get("confidence", result.get("final_confidence", 0.8))
+        
+        # Check if we have product-level sentiment data
+        product_sentiments = data.get("product_sentiments", []) if isinstance(data, dict) else []
+        
+        if product_sentiments:
+            # Find products with most positive reviews
+            positive_products = sorted(
+                [p for p in product_sentiments if p.get("average_sentiment", 0) > 0.4],
+                key=lambda x: x.get("average_sentiment", 0),
+                reverse=True
+            )[:10]  # Top 10
+            
+            if positive_products:
+                # Store detailed product info in supporting_evidence
+                product_evidence = []
+                for prod in positive_products:
+                    product_name = prod.get("product_name", "Unknown Product")
+                    sku = prod.get("sku", prod.get("product_id", "N/A"))
+                    avg_sentiment = prod.get("average_sentiment", 0)
+                    review_count = prod.get("review_count", 0)
+                    positive_pct = prod.get("positive_percentage", 0)
+                    
+                    evidence = SupportingEvidence(
+                        evidence_id=str(uuid4()),
+                        insight_id="",
+                        source_data_type="sentiment_analysis",
+                        source_record_ids=[str(prod.get("product_id", ""))],
+                        data_lineage_path=["sentiment_agent", "product_analysis"],
+                        confidence=agent_confidence,
+                        transformation_applied=json.dumps({
+                            "sku": sku,
+                            "name": product_name,
+                            "average_sentiment": round(avg_sentiment, 2),
+                            "review_count": review_count,
+                            "positive_percentage": round(positive_pct, 1),
+                            "badge": f"{positive_pct:.0f}% positive",
+                            "badge_variant": "success" if positive_pct > 80 else "warning"
+                        })
+                    )
+                    product_evidence.append(evidence)
+                
+                description = f"Found {len(positive_products)} products with highly positive reviews (>40% sentiment score)"
+                
+                insight = Insight(
+                    insight_id=str(uuid4()),
+                    title="Products with Most Positive Reviews",
+                    description=description,
+                    category="sentiment",
+                    agent_source=agent_name,
+                    confidence=agent_confidence,
+                    supporting_evidence=product_evidence
+                )
+                
+                # Update evidence with insight_id
+                for evidence in insight.supporting_evidence:
+                    evidence.insight_id = insight.insight_id
+                
+                insights.append(insight)
         
         # Overall sentiment
         sentiment_score = data.get("aggregate_sentiment_score", 0)

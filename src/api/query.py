@@ -56,6 +56,138 @@ async def get_query_history(
     }
 
 
+async def _execute_sales_query(
+    db: AsyncSession,
+    tenant_id: UUID,
+    query_text: str,
+    product_ids: List[UUID]
+) -> StructuredReport:
+    """
+    Execute a sales-focused query by directly querying sales data.
+    
+    Args:
+        db: Database session
+        tenant_id: Tenant ID for filtering
+        query_text: Original query text
+        product_ids: List of relevant product IDs
+        
+    Returns:
+        Structured report with sales data
+    """
+    from sqlalchemy import func, desc
+    from src.models.sales_record import SalesRecord
+    from src.schemas.report import Insight, ActionItem, SupportingEvidence
+    from datetime import datetime
+    import json
+    
+    # Query sales data for the products
+    result = await db.execute(
+        select(
+            SalesRecord.product_id,
+            Product.name,
+            Product.sku,
+            func.sum(SalesRecord.quantity).label('total_units_sold'),
+            func.sum(SalesRecord.total_amount).label('total_revenue'),
+            func.count(SalesRecord.id).label('order_count')
+        )
+        .join(Product, SalesRecord.product_id == Product.id)
+        .where(
+            SalesRecord.tenant_id == tenant_id,
+            SalesRecord.product_id.in_(product_ids) if product_ids else True
+        )
+        .group_by(SalesRecord.product_id, Product.name, Product.sku)
+        .order_by(desc('total_units_sold'))
+        .limit(10)
+    )
+    
+    sales_data = result.all()
+    
+    if not sales_data:
+        # No sales data found
+        return StructuredReport(
+            query_id=str(uuid4()),
+            query=query_text,
+            overall_confidence=0.0,
+            executive_summary="No sales data found for the specified products.",
+            insights=[],
+            action_items=[],
+            direct_answer=None,
+            metadata={
+                'intent': 'sales_analysis',
+                'products_analyzed': 0,
+                'data_source': 'sales_records'
+            }
+        )
+    
+    # Build insights from sales data
+    insights = []
+    top_product = sales_data[0]
+    
+    # Create main insight about top selling products
+    supporting_evidence = []
+    for idx, row in enumerate(sales_data[:5], 1):
+        evidence_data = {
+            'rank': idx,
+            'product_name': row.name,
+            'sku': row.sku,
+            'units_sold': int(row.total_units_sold),
+            'revenue': float(row.total_revenue),
+            'order_count': int(row.order_count)
+        }
+        supporting_evidence.append(
+            SupportingEvidence(
+                data_source=f"sales_records",
+                transformation_applied=json.dumps(evidence_data),
+                confidence=0.95
+            )
+        )
+    
+    main_insight = Insight(
+        title="Top Selling Products",
+        description=f"Found {len(sales_data)} products ranked by sales volume. "
+                   f"Top product: {top_product.name} with {int(top_product.total_units_sold)} units sold.",
+        confidence=0.95,
+        impact_score=0.9,
+        supporting_evidence=supporting_evidence
+    )
+    insights.append(main_insight)
+    
+    # Create direct answer
+    direct_answer = (
+        f"{top_product.name} is the top selling product with "
+        f"{int(top_product.total_units_sold)} units sold, "
+        f"generating ${float(top_product.total_revenue):,.2f} in revenue."
+    )
+    
+    # Create action items
+    action_items = []
+    for idx, row in enumerate(sales_data[:3], 1):
+        action_items.append(
+            ActionItem(
+                title=f"Monitor inventory for {row.name}",
+                description=f"High sales volume ({int(row.total_units_sold)} units) - ensure adequate stock levels",
+                priority="high" if idx == 1 else "medium",
+                estimated_impact=0.8 if idx == 1 else 0.6
+            )
+        )
+    
+    return StructuredReport(
+        query_id=str(uuid4()),
+        query=query_text,
+        overall_confidence=0.95,
+        executive_summary=f"Sales analysis for top selling products. {top_product.name} leads with {int(top_product.total_units_sold)} units sold.",
+        insights=insights,
+        action_items=action_items,
+        direct_answer=direct_answer,
+        metadata={
+            'intent': 'sales_analysis',
+            'products_analyzed': len(sales_data),
+            'data_source': 'sales_records',
+            'total_revenue': float(sum(row.total_revenue for row in sales_data))
+        }
+    )
+
+
 @router.post("", response_model=StructuredReport)
 async def execute_query(
     request: QueryRequest,
@@ -113,15 +245,15 @@ async def execute_query(
         llm_engine = LLMReasoningEngine(tenant_id=tenant_id)
         intent, parameters = llm_engine.understand_query(request.query_text)
         
-        # Select agents based on intent
+        # Select agents based on intent ONLY (don't combine with router suggestions)
         suggested_agents = llm_engine.select_agents(intent, parameters)
         
         logger.info(f"[ORCHESTRATION] Query understanding: intent={intent}, "
                     f"parameters={parameters}, "
-                    f"suggested_agents={[a.value for a in suggested_agents]}")
+                    f"selected_agents={[a.value for a in suggested_agents]}")
         
-        # Combine router and LLM agent suggestions
-        required_agents = list(set(routing_decision.required_agents + suggested_agents))
+        # Use ONLY the agents selected by LLM based on intent
+        required_agents = suggested_agents
         
         # STEP 3: Create Execution Plan
         execution_mode = routing_decision.execution_mode
@@ -160,18 +292,24 @@ async def execute_query(
         }
         
         # Execute agents
-        agent_results = await execution_service.execute_plan(execution_plan, query_data)
+        agent_results_list = await execution_service.execute_plan(execution_plan, query_data)
         
-        logger.info(f"[ORCHESTRATION] Execution complete: {len(agent_results)} results, "
-                    f"{sum(1 for r in agent_results if r.success)} successful")
+        logger.info(f"[ORCHESTRATION] Execution complete: {len(agent_results_list)} results, "
+                    f"{sum(1 for r in agent_results_list if r.success)} successful")
+        
+        # Convert List[AgentResult] to Dict[AgentType, Dict[str, Any]] for synthesizer
+        agent_results = {
+            result.agent_type: result.data if result.data else {}
+            for result in agent_results_list
+        }
         
         # STEP 5: Synthesize Results
         query_id = str(uuid4())  # Generate unique query ID
         execution_metadata = {
-            'execution_mode': execution_plan.mode.value,
-            'agents_used': [agent.value for agent in execution_plan.agents],
+            'execution_mode': execution_plan.execution_mode.value,
+            'agents_used': [task.agent_type.value for task in execution_plan.tasks],
             'execution_time': execution_plan.estimated_duration.total_seconds(),
-            'parallel_execution': execution_plan.parallel_execution
+            'parallel_execution': len(execution_plan.parallel_groups) > 0
         }
         
         result_synthesizer = ResultSynthesizer(tenant_id=tenant_id)
@@ -187,10 +325,10 @@ async def execute_query(
                     f"action_items={len(structured_report.action_items)}")
         
         # Log token usage if LLM was used
-        token_usage = llm_engine.get_total_token_usage()
+        token_usage = llm_engine.get_token_usage()
         if token_usage['total_tokens'] > 0:
             logger.info(f"[ORCHESTRATION] Token usage: {token_usage['total_tokens']} tokens, "
-                        f"${token_usage['total_cost_usd']} cost")
+                        f"${token_usage['estimated_cost_usd']} cost")
         
         return structured_report
     

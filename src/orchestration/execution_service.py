@@ -444,18 +444,23 @@ class ExecutionService:
             # Calculate average confidence
             avg_confidence = qa_report.overall_quality_score if qa_report else 0.8
             
-            # Convert price gaps to dicts for serialization
-            price_gaps_list = [
-                {
+            # Create product lookup dict
+            product_lookup = {p.id: p for p in our_products}
+            
+            # Convert price gaps to dicts for serialization with product names
+            price_gaps_list = []
+            for gap in price_gaps:
+                product = product_lookup.get(gap.product_id)
+                price_gaps_list.append({
                     'product_id': str(gap.product_id),
+                    'product_name': product.name if product else f'Product {str(gap.product_id)[:8]}',
+                    'sku': product.sku if product else f'SKU-{str(gap.product_id)[:8]}',
                     'our_price': float(gap.our_price),
                     'competitor_price': float(gap.competitor_price),
                     'gap_amount': float(gap.gap_amount),
                     'gap_percentage': float(gap.gap_percentage),
-                    'confidence': 0.85  # Default confidence
-                }
-                for gap in price_gaps
-            ]
+                    'confidence': 0.85
+                })
             
             logger.info("Pricing agent: Returning results")
             
@@ -466,19 +471,22 @@ class ExecutionService:
                 'data': {
                     'message': f'Analyzed {len(our_products)} products, found {len(price_gaps)} price gaps',
                     'product_count': len(our_products),
-                    'price_gaps': price_gaps_list,  # Return the actual list, not the count
+                    'price_gaps': price_gaps_list,
                     'average_price': float(sum(p.price for p in our_products) / len(our_products)) if our_products else 0,
-                    'price_change_pct': 0.0,  # Would calculate from historical data
+                    'price_change_pct': 0.0,
                     'recommendations': [
                         {
-                            'title': f'Price adjustment for product',
+                            'product_id': str(gap.product_id),
+                            'product_name': product_lookup.get(gap.product_id).name if gap.product_id in product_lookup else 'Unknown Product',
+                            'sku': product_lookup.get(gap.product_id).sku if gap.product_id in product_lookup else 'Unknown SKU',
+                            'title': f'Price adjustment for {product_lookup.get(gap.product_id).name if gap.product_id in product_lookup else "product"}',
                             'description': f'Consider adjusting price by {gap.gap_percentage:.1f}%',
                             'priority': 'high' if abs(gap.gap_percentage) > 10 else 'medium',
                             'impact': 'high',
                             'urgency': 'medium',
                             'confidence': 0.85
                         }
-                        for gap in price_gaps[:3]  # Top 3 gaps
+                        for gap in price_gaps[:3]
                     ]
                 }
             }
@@ -501,6 +509,7 @@ class ExecutionService:
         """Execute sentiment analysis agent"""
         from sqlalchemy import select
         from src.models.review import Review
+        from src.models.product import Product
         from src.agents.sentiment_analysis_v2 import EnhancedSentimentAgent
         from src.agents.data_qa_agent import DataQAAgent
         from src.schemas.review import ReviewResponse
@@ -551,6 +560,53 @@ class ExecutionService:
             qa_report
         )
         
+        # Calculate per-product sentiment for "which product" queries
+        product_sentiments = []
+        raw_by_product = {}
+        
+        # Group raw DB records by product_id
+        for r in reviews_records:
+            pid = r.product_id
+            if pid not in raw_by_product:
+                raw_by_product[pid] = []
+            raw_by_product[pid].append(r)
+        
+        # Calculate sentiment for each product
+        for product_id, product_reviews in raw_by_product.items():
+            sentiments = []
+            for r in product_reviews:
+                # Try to get sentiment value from either sentiment or sentiment_score field
+                sentiment_value = r.sentiment_score if r.sentiment_score is not None else r.sentiment
+                if sentiment_value is not None:
+                    try:
+                        sentiments.append(float(sentiment_value))
+                    except (ValueError, TypeError):
+                        continue
+            
+            if sentiments:
+                avg_sentiment = sum(sentiments) / len(sentiments)
+                positive_count = sum(1 for s in sentiments if s > 0.4)
+                positive_pct = (positive_count / len(sentiments)) * 100
+                
+                # Fetch product name from database
+                product_result = await db.execute(
+                    select(Product).where(Product.id == product_id)
+                )
+                product = product_result.scalar_one_or_none()
+                
+                product_sentiments.append({
+                    'product_id': str(product_id),
+                    'sku': product.sku if product else f'PROD-{str(product_id)[:8]}',
+                    'product_name': product.name if product else f'Product {str(product_id)[:8]}',
+                    'average_sentiment': avg_sentiment,
+                    'review_count': len(product_reviews),
+                    'positive_count': positive_count,
+                    'positive_percentage': positive_pct
+                })
+        
+        # Sort by average sentiment (highest first)
+        product_sentiments.sort(key=lambda x: x['average_sentiment'], reverse=True)
+        
         # Calculate average sentiment
         avg_sentiment = sentiment_result.aggregate_sentiment
         
@@ -559,15 +615,16 @@ class ExecutionService:
             'status': 'completed',
             'confidence': sentiment_result.confidence_score,
             'data': {
-                'message': f'Analyzed {len(reviews)} reviews with {avg_sentiment:.2f} average sentiment',
+                'message': f'Analyzed {len(reviews)} reviews across {len(product_sentiments)} products',
                 'review_count': len(reviews),
-                'aggregate_sentiment_score': avg_sentiment,  # Add this field for synthesizer
+                'aggregate_sentiment_score': avg_sentiment,
                 'average_sentiment': avg_sentiment,
-                'sentiment_change': 0.0,  # Would calculate from historical data
+                'sentiment_change': 0.0,
                 'positive_count': sentiment_result.sentiment_distribution.get('positive', 0),
                 'negative_count': sentiment_result.sentiment_distribution.get('negative', 0),
                 'neutral_count': sentiment_result.sentiment_distribution.get('neutral', 0),
-                'feature_requests': [],  # Add empty list for now (would extract from reviews)
+                'product_sentiments': product_sentiments,
+                'feature_requests': [],
                 'complaint_patterns': [],  # Add empty list for now (would extract from reviews)
                 'recommendations': [
                     {

@@ -41,8 +41,57 @@ export default function IntelligencePage() {
   // Handle query execution completion
   useEffect(() => {
     if (executeQueryMutation.isSuccess && executeQueryMutation.data) {
-      setQueryResults(executeQueryMutation.data);
-      setCurrentQueryId(executeQueryMutation.data.id);
+      // Transform backend StructuredReport to frontend format
+      const backendData = executeQueryMutation.data;
+      const transformedResults = {
+        id: backendData.report_id,
+        summary: {
+          text: backendData.executive_summary || 'No summary available',
+          keyFindings: backendData.insights?.slice(0, 3).map(i => i.title) || []
+        },
+        insights: backendData.insights?.map(insight => {
+          // Extract product details from supporting_evidence
+          const details = insight.supporting_evidence?.map(evidence => {
+            try {
+              const data = JSON.parse(evidence.transformation_applied || '{}');
+              return {
+                sku: data.sku || 'N/A',
+                name: data.name || 'Unknown Product',
+                description: data.description,
+                badge: data.badge,
+                badgeVariant: data.badge_variant,
+                metrics: [
+                  data.current_price && { label: 'Current', value: `$${data.current_price}` },
+                  data.competitor_price && { label: 'Competitor', value: `$${data.competitor_price}` },
+                  data.gap_percentage && { label: 'Gap', value: `${data.gap_percentage}%` }
+                ].filter(Boolean)
+              };
+            } catch (e) {
+              return null;
+            }
+          }).filter(Boolean) || [];
+
+          return {
+            title: insight.title,
+            description: insight.description,
+            value: insight.confidence ? `${(insight.confidence * 100).toFixed(0)}%` : null,
+            trend: 'stable',
+            variant: insight.confidence > 0.7 ? 'success' : insight.confidence > 0.4 ? 'warning' : 'danger',
+            icon: 'lightbulb',
+            details: details.length > 0 ? details : null
+          };
+        }) || [],
+        actionItems: backendData.action_items || [],
+        data: [], // No detailed data table for now
+        columns: [],
+        visualization: null, // No visualization for now
+        confidence: backendData.overall_confidence,
+        metrics: backendData.key_metrics || [],
+        risks: backendData.risks || []
+      };
+      
+      setQueryResults(transformedResults);
+      setCurrentQueryId(backendData.report_id);
       
       if (isPollingMode) {
         toast.info('Query Submitted', 'Using polling mode for progress updates', 3000);
@@ -150,7 +199,7 @@ export default function IntelligencePage() {
         )}
 
         {/* Results Panel */}
-        {queryResults && status === 'completed' && (
+        {queryResults && (status === 'completed' || executeQueryMutation.isSuccess) && (
           <div className={styles.resultsSection}>
             <ResultsPanel
               results={queryResults}
