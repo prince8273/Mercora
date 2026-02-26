@@ -119,6 +119,7 @@ async def get_recent_activity(
 @router.get("/kpis")
 async def get_dashboard_kpis(
     request: Request,
+    days: int = 30,
     db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:
     """
@@ -130,8 +131,8 @@ async def get_dashboard_kpis(
         tenant_id = str(get_tenant_id_from_request(request))
         email = get_user_email_from_request(request)
         
-        # Step 1: Build cache key
-        cache_key = make_cache_key("dashboard_kpis", tenant_id)
+        # Step 1: Build cache key with days parameter
+        cache_key = make_cache_key("dashboard_kpis", tenant_id, days=days)
         
         # Step 2: Check cache
         cached_data = await get_cached(cache_key)
@@ -139,9 +140,9 @@ async def get_dashboard_kpis(
             return {"payload": cached_data}
         
         # Step 3: Cache miss - fetch from DataService
-        logger.info(f"Fetching dashboard KPIs from Mock API for tenant {tenant_id}")
+        logger.info(f"Fetching dashboard KPIs from Mock API for tenant {tenant_id} (days={days})")
         data_service = DataService(tenant_id=tenant_id, email=email, db=db)
-        kpis = await data_service.get_dashboard_kpis()
+        kpis = await data_service.get_dashboard_kpis(days=days)
         
         # Step 4: Store in cache
         await set_cached(cache_key, kpis, ttl=get_ttl("dashboard_kpis"))

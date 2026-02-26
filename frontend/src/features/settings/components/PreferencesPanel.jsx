@@ -20,6 +20,25 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Sync local state when initialPreferences changes (e.g., from another tab)
+  useEffect(() => {
+    if (initialPreferences) {
+      setPreferences({
+        theme: 'system',
+        language: 'en',
+        dateFormat: 'MM/DD/YYYY',
+        defaultDateRange: '30d',
+        notifications: {
+          email: true,
+          push: false,
+          alerts: true,
+          reports: true,
+        },
+        ...initialPreferences,
+      });
+    }
+  }, [initialPreferences]);
+
   useEffect(() => {
     const hasChanged = JSON.stringify(preferences) !== JSON.stringify(initialPreferences);
     setHasChanges(hasChanged);
@@ -117,6 +136,7 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
             onChange={(e) => handleInputChange('language', e.target.value)}
           >
             <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
             <option value="es">Español</option>
             <option value="fr">Français</option>
             <option value="de">Deutsch</option>
