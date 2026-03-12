@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendChart } from './TrendChart';
+import { formatCurrency } from '../../../utils/currency';
 
 // Example data for demonstration
 const sampleData = [
@@ -13,15 +14,6 @@ const sampleData = [
 ];
 
 export const TrendChartExamples = () => {
-  // Format currency
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
-
   // Format percentage
   const formatPercentage = (value) => `${value}%`;
 

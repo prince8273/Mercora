@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '../../utils/currency';
 import styles from './ImpactMetrics.module.css';
 
 export const ImpactMetrics = ({
@@ -10,16 +11,6 @@ export const ImpactMetrics = ({
   ...props
 }) => {
   const { revenue, margin, units, risk } = metrics;
-
-  const formatCurrency = (value) => {
-    if (!value) return '$0';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   const formatNumber = (value) => {
     if (!value) return '0';

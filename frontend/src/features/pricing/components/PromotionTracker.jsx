@@ -2,6 +2,7 @@ import React from 'react';
 import { MetricCard } from '../../../components/molecules/MetricCard';
 import { StatusIndicator } from '../../../components/molecules/StatusIndicator';
 import { LoadingSkeleton } from '../../../components/molecules/LoadingSkeleton';
+import { formatCurrency } from '../../../utils/currency';
 import styles from './PromotionTracker.module.css';
 
 export const PromotionTracker = ({
@@ -11,13 +12,6 @@ export const PromotionTracker = ({
   className = '',
   ...props
 }) => {
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
 
   const formatPercentage = (value) => `${value.toFixed(1)}%`;
 

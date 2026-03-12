@@ -1,10 +1,15 @@
 """
 Data Service - Unified data fetching from Mock API or Database
-Switches between Mock API and Database based on DATA_SOURCE env variable
+
+Provides a single interface for data access that switches between:
+- Mock API (Vercel deployment) for testing
+- Local database for development and production
+
+All data is automatically filtered by tenant_id for security isolation.
 """
 import httpx
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime, timedelta
@@ -13,29 +18,38 @@ from src.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Use settings from config (which loads from .env via pydantic)
+# Configuration constants
 DATA_SOURCE = settings.data_source
 MOCK_API_URL = settings.mock_api_url
 INTERNAL_API_KEY = settings.internal_api_key
 
-# Tenant ID mapping: Our UUIDs → Vercel tenant IDs
+# Mock API authentication
+MOCK_API_EMAIL = "seller@tenant-002.com"
+MOCK_API_PASSWORD = "password123"
+
+# Tenant ID mapping for Mock API compatibility
 TENANT_ID_MAPPING = {
     "54d459ab-4ae8-480a-9d1c-d53b218a4fb2": "tenant-001",  # TechGear Pro
-    # Add more mappings as needed
+    "62e60139-5cb5-4c1d-9d85-35276596a226": "tenant-002",  # Prince Kumar
 }
 
-def map_tenant_id(our_tenant_id: str) -> str:
-    """Map our UUID tenant ID to Vercel tenant ID format"""
-    return TENANT_ID_MAPPING.get(our_tenant_id, "tenant-001")  # Default to tenant-001
+# Global token storage (TODO: Replace with Redis in production)
+_mock_api_token = None
 
-# Log the configuration on module load
 logger.info(f"DataService initialized: DATA_SOURCE={DATA_SOURCE}, MOCK_API_URL={MOCK_API_URL}")
+
+
+def map_tenant_id(our_tenant_id: str) -> str:
+    """Map internal UUID tenant ID to Mock API tenant ID format."""
+    return TENANT_ID_MAPPING.get(our_tenant_id, "tenant-002")
 
 
 class DataService:
     """
-    Unified data service that switches between Mock API and Database
-    All data is automatically filtered by tenant_id for security
+    Unified data service for dashboard metrics and analytics.
+    
+    Automatically switches between Mock API and local database based on
+    DATA_SOURCE configuration. All operations are tenant-isolated for security.
     """
     
     def __init__(self, tenant_id: str, email: str, db: AsyncSession = None):
@@ -59,9 +73,55 @@ class DataService:
             from src.models.product import Product
             from src.models.sales_record import SalesRecord
             
-            today = datetime.utcnow().date()
-            since = today - timedelta(days=days)
-            previous_period_start = since - timedelta(days=days)
+            # First, check what data range we actually have
+            date_check = await self.db.execute(
+                select(
+                    func.min(SalesRecord.date),
+                    func.max(SalesRecord.date),
+                    func.count(SalesRecord.id)
+                ).where(SalesRecord.tenant_id == self.tenant_id)
+            )
+            min_date, max_date, total_sales = date_check.first()
+            
+            if not total_sales or total_sales == 0:
+                # No sales data - return zeros
+                return {
+                    "gmv": {"value": 0, "change": 0, "trend": "neutral"},
+                    "margin": {"value": 0, "change": 0, "trend": "neutral"},
+                    "conversion": {"value": 0, "change": 0, "trend": "neutral"},
+                    "inventory_health": {"value": 0, "change": 0, "trend": "neutral"},
+                    "units_sold": {"value": 0, "change": 0, "trend": "neutral"},
+                    "total_orders": 0
+                }
+            
+            # Use the requested date range, but constrain to available data
+            if min_date and max_date:
+                # Convert string dates to date objects if needed
+                if isinstance(min_date, str):
+                    from datetime import datetime
+                    min_date = datetime.strptime(min_date, '%Y-%m-%d').date()
+                    max_date = datetime.strptime(max_date, '%Y-%m-%d').date()
+                
+                # Calculate the end date for the requested period
+                data_end = max_date
+                data_start = max(min_date, max_date - timedelta(days=days-1))
+                
+                # For comparison, use the previous period of same duration
+                period_duration = (data_end - data_start).days + 1
+                prev_end = data_start - timedelta(days=1)
+                prev_start = max(min_date, prev_end - timedelta(days=period_duration-1))
+                
+                print(f"DEBUG: Requested {days} days")
+                print(f"DEBUG: Current period: {data_start} to {data_end}")
+                print(f"DEBUG: Previous period: {prev_start} to {prev_end}")
+                
+            else:
+                # Fallback to recent days approach
+                today = datetime.utcnow().date()
+                data_end = today
+                data_start = today - timedelta(days=days-1)
+                prev_end = data_start - timedelta(days=1)
+                prev_start = prev_end - timedelta(days=days-1)
             
             # Get current period revenue, units, and orders
             result = await self.db.execute(
@@ -71,7 +131,8 @@ class DataService:
                     func.count(SalesRecord.id)
                 ).where(
                     SalesRecord.tenant_id == self.tenant_id,
-                    SalesRecord.date >= since
+                    SalesRecord.date >= data_start,
+                    SalesRecord.date <= data_end
                 )
             )
             revenue, units, orders = result.first()
@@ -79,7 +140,7 @@ class DataService:
             total_units = int(units or 0)
             total_orders = int(orders or 0)
             
-            # Get previous period data for comparison
+            # Get previous period data for comparison (if available)
             prev_result = await self.db.execute(
                 select(
                     func.sum(SalesRecord.revenue),
@@ -87,8 +148,8 @@ class DataService:
                     func.count(SalesRecord.id)
                 ).where(
                     SalesRecord.tenant_id == self.tenant_id,
-                    SalesRecord.date >= previous_period_start,
-                    SalesRecord.date < since
+                    SalesRecord.date >= prev_start,
+                    SalesRecord.date <= prev_end
                 )
             )
             prev_revenue, prev_units, prev_orders = prev_result.first()
@@ -156,10 +217,12 @@ class DataService:
             # Compare current average inventory with inventory trend from sales velocity
             
             # Get current period sales velocity (units sold per day)
-            current_velocity = total_units / days if days > 0 else 0
+            data_days = (data_end - data_start).days + 1
+            current_velocity = total_units / data_days if data_days > 0 else 0
             
             # Get previous period sales velocity
-            prev_velocity = prev_total_units / days if days > 0 else 0
+            prev_data_days = (prev_end - prev_start).days + 1 if prev_end >= prev_start else 1
+            prev_velocity = prev_total_units / prev_data_days if prev_data_days > 0 else 0
             
             # Calculate inventory health change based on:
             # 1. Change in stock percentage
@@ -209,8 +272,37 @@ class DataService:
         else:
             from src.models.sales_record import SalesRecord
             
-            today = datetime.utcnow().date()
-            since = today - timedelta(days=days)
+            # First, check if we have any sales data at all
+            check_result = await self.db.execute(
+                select(
+                    func.min(SalesRecord.date),
+                    func.max(SalesRecord.date),
+                    func.count(SalesRecord.id)
+                ).where(SalesRecord.tenant_id == self.tenant_id)
+            )
+            min_date, max_date, total_count = check_result.first()
+            
+            if not total_count or total_count == 0:
+                # No sales data available
+                return {
+                    "trends": [],
+                    "labels": [],
+                    "revenue_data": [],
+                    "orders_data": []
+                }
+            
+            # Use the requested date range, respecting the days parameter
+            if min_date and max_date:
+                # Calculate the end date (use the most recent data available)
+                until = max_date
+                # Calculate start date based on requested days, but don't go before min_date
+                requested_start = max_date - timedelta(days=days-1)
+                since = max(min_date, requested_start)
+            else:
+                # Fallback to recent days if no date range found
+                today = datetime.utcnow().date()
+                since = today - timedelta(days=days-1)
+                until = today
             
             result = await self.db.execute(
                 select(
@@ -220,7 +312,8 @@ class DataService:
                     func.count(SalesRecord.id).label('orders')
                 ).where(
                     SalesRecord.tenant_id == self.tenant_id,
-                    SalesRecord.date >= since
+                    SalesRecord.date >= since,
+                    SalesRecord.date <= until
                 ).group_by(SalesRecord.date).order_by(SalesRecord.date)
             )
             
@@ -380,7 +473,7 @@ class DataService:
     async def _fetch_mock(self, endpoint: str, params: Dict[str, Any] = None):
         """
         Fetch data from Mock API (Vercel deployment)
-        Uses X-Internal-Key header for service-to-service authentication
+        Uses JWT authentication after login
         tenant_id is ALWAYS added to params for isolation
         """
         if params is None:
@@ -392,9 +485,13 @@ class DataService:
         
         url = f"{MOCK_API_URL}{endpoint}"
         
-        # Add internal API key for service-to-service authentication
+        # Get JWT token (login if needed)
+        token = await self._get_mock_api_token()
+        
+        # Add JWT token for authentication
         headers = {
-            "X-Internal-Key": INTERNAL_API_KEY
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
         }
         
         try:
@@ -405,6 +502,52 @@ class DataService:
         except httpx.ConnectError:
             raise Exception(f"Cannot connect to Mock API at {MOCK_API_URL}. Is it accessible?")
         except httpx.HTTPStatusError as e:
-            raise Exception(f"Mock API returned error {e.response.status_code} for {endpoint}")
+            if e.response.status_code == 401:
+                # Token expired, try to refresh
+                global _mock_api_token
+                _mock_api_token = None
+                token = await self._get_mock_api_token()
+                headers["Authorization"] = f"Bearer {token}"
+                
+                # Retry with new token
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(url, params=params, headers=headers)
+                    response.raise_for_status()
+                    return response.json()
+            else:
+                raise Exception(f"Mock API returned error {e.response.status_code} for {endpoint}")
         except Exception as e:
             raise Exception(f"Mock API error: {str(e)}")
+    
+    async def _get_mock_api_token(self) -> str:
+        """Get JWT token for Mock API authentication"""
+        global _mock_api_token
+        
+        if _mock_api_token:
+            return _mock_api_token
+        
+        # Login to get JWT token
+        login_url = f"{MOCK_API_URL}/api/auth/login"
+        login_data = {
+            "email": MOCK_API_EMAIL,
+            "password": MOCK_API_PASSWORD
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(login_url, json=login_data)
+                response.raise_for_status()
+                data = response.json()
+                
+                # Extract token from response
+                token = data.get("access_token") or data.get("token")
+                if not token:
+                    raise Exception("No token in login response")
+                
+                _mock_api_token = token
+                logger.info("Successfully authenticated with Mock API")
+                return token
+                
+        except Exception as e:
+            logger.error(f"Failed to authenticate with Mock API: {e}")
+            raise Exception(f"Mock API authentication failed: {str(e)}")

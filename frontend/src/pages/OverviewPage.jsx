@@ -5,6 +5,7 @@ import { TrendChart, AlertPanel, QuickInsights } from '../features/dashboard/com
 import { PageHeader } from '../components/molecules/PageHeader';
 import { LoadingSkeleton } from '../components/molecules/LoadingSkeleton';
 import { Button } from '../components/atoms/Button';
+import { formatCurrency } from '../utils/currency';
 import {
   useDashboardOverview,
   useKPIMetrics,
@@ -58,8 +59,22 @@ export default function OverviewPage() {
       }
     };
 
+    // Listen for custom event from same tab
+    const handlePreferencesChanged = (e) => {
+      const { preferences } = e.detail;
+      if (preferences.defaultDateRange && preferences.defaultDateRange !== timeRange) {
+        setPendingTimeRange(preferences.defaultDateRange);
+        setShowReloadPrompt(true);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('preferencesChanged', handlePreferencesChanged);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('preferencesChanged', handlePreferencesChanged);
+    };
   }, [timeRange]);
 
   const handleReloadData = () => {
@@ -123,15 +138,6 @@ export default function OverviewPage() {
   const handleRefresh = () => {
     refetchOverview();
     refetchAlerts();
-  };
-
-  // Format currency
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
   };
 
   // Format percentage
@@ -224,7 +230,7 @@ export default function OverviewPage() {
               marginBottom: '24px',
               lineHeight: '1.5'
             }}>
-              The date range settings have been changed in another tab. Would you like to reload the dashboard with the new settings?
+              Your default date range has been updated. Would you like to reload the dashboard with the new settings?
             </p>
 
             {/* Actions */}
@@ -328,7 +334,13 @@ export default function OverviewPage() {
             type="area"
             loading={trendLoading}
             error={trendError ? 'Failed to load trend data' : (trendData?.trends?.length === 0 ? 'No trend data available for this period' : null)}
-            formatValue={(value) => value.toLocaleString()}
+            formatValue={(value, key) => {
+              // Apply currency formatting for revenue, number formatting for others
+              if (key === 'revenue') {
+                return formatCurrency(value);
+              }
+              return value.toLocaleString();
+            }}
             formatXAxis={formatDate}
             height={350}
           />

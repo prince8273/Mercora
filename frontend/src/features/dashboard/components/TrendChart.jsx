@@ -67,7 +67,7 @@ export const TrendChart = ({
               />
               <span className={styles.tooltipName}>{entry.name}:</span>
               <span className={styles.tooltipValue}>
-                {formatValue(entry.value)}
+                {formatValue(entry.value, entry.dataKey)}
               </span>
             </div>
           ))}
@@ -117,7 +117,7 @@ export const TrendChart = ({
             style={{ fontSize: '0.75rem' }}
           />
           <YAxis
-            tickFormatter={formatValue}
+            tickFormatter={(value) => formatValue(value, 'revenue')}
             stroke="var(--text-tertiary)"
             style={{ fontSize: '0.75rem' }}
           />
