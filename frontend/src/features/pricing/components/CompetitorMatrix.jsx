@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { Button } from '../../../components/atoms/Button';
 import { LoadingSkeleton } from '../../../components/molecules/LoadingSkeleton';
+import { formatPrice } from '../../../utils/currency';
 import styles from './CompetitorMatrix.module.css';
 
 export const CompetitorMatrix = ({
@@ -14,7 +14,6 @@ export const CompetitorMatrix = ({
   ...props
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const parentRef = React.useRef(null);
 
   // Sort data
   const sortedData = useMemo(() => {
@@ -38,14 +37,6 @@ export const CompetitorMatrix = ({
     });
   }, [data, sortConfig]);
 
-  // Virtualization
-  const rowVirtualizer = useVirtualizer({
-    count: sortedData.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 60,
-    overscan: 10,
-  });
-
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
@@ -66,13 +57,9 @@ export const CompetitorMatrix = ({
     return styles.neutral;
   };
 
-  const formatPrice = (price) => {
+  const formatPriceValue = (price) => {
     if (!price) return '-';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(price);
+    return formatPrice(price); // Use centralized currency utility
   };
 
   const formatGap = (gap) => {
@@ -142,7 +129,7 @@ export const CompetitorMatrix = ({
         </Button>
       </div>
 
-      <div ref={parentRef} className={styles.tableWrapper}>
+      <div className={styles.tableWrapper}>
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead className={styles.thead}>
@@ -189,32 +176,15 @@ export const CompetitorMatrix = ({
                 <th className={styles.th}>Avg Gap</th>
               </tr>
             </thead>
-            <tbody
-              className={styles.tbody}
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = sortedData[virtualRow.index];
+            <tbody className={styles.tbody}>
+              {sortedData.map((row, rowIndex) => {
                 const avgGap = competitors.reduce((sum, comp) => {
                   const gap = getPriceGap(row.yourPrice, row.competitorPrices?.[comp.id]);
                   return gap !== null ? sum + gap : sum;
                 }, 0) / competitors.length;
 
                 return (
-                  <tr
-                    key={virtualRow.key}
-                    className={styles.tr}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
+                  <tr key={rowIndex} className={styles.tr}>
                     <td className={`${styles.td} ${styles.stickyColumn}`}>
                       <div className={styles.productCell}>
                         <span className={styles.productName}>{row.productName}</span>
@@ -222,7 +192,7 @@ export const CompetitorMatrix = ({
                       </div>
                     </td>
                     <td className={styles.td}>
-                      <span className={styles.price}>{formatPrice(row.yourPrice)}</span>
+                      <span className={styles.price}>{formatPriceValue(row.yourPrice)}</span>
                     </td>
                     {competitors.map((competitor) => {
                       const competitorPrice = row.competitorPrices?.[competitor.id];
@@ -230,7 +200,7 @@ export const CompetitorMatrix = ({
                       return (
                         <td key={competitor.id} className={styles.td}>
                           <div className={styles.priceCell}>
-                            <span className={styles.price}>{formatPrice(competitorPrice)}</span>
+                            <span className={styles.price}>{formatPriceValue(competitorPrice)}</span>
                             {gap !== null && (
                               <span className={`${styles.gap} ${getGapClass(gap)}`}>
                                 {formatGap(gap)}

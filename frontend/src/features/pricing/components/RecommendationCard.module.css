@@ -2,8 +2,9 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: 1rem;
   transition: all 0.2s ease;
+  margin-bottom: 1rem;
 }
 
 .container:hover {
@@ -14,34 +15,165 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.productInfo {
+.typeIndicator {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   flex: 1;
-  min-width: 0;
 }
 
-.productName {
-  font-size: 1rem;
+.typeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.typeIcon.typeCompetitive {
+  background-color: var(--warning-alpha);
+  color: var(--warning-color);
+}
+
+.typeIcon.typePremium {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.typeIcon.typeOptimization {
+  background-color: var(--primary-alpha);
+  color: var(--primary-color);
+}
+
+.typeIcon.typeOpportunity {
+  background-color: var(--info-alpha);
+  color: var(--info-color);
+}
+
+.typeIcon.typeDynamic {
+  background-color: var(--secondary-alpha);
+  color: var(--secondary-color);
+}
+
+.typeIcon.typeDefault {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0;
+}
+
+.typeLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.typeLabel.typeCompetitive {
+  background-color: var(--warning-alpha);
+  color: var(--warning-color);
+}
+
+.typeLabel.typePremium {
+  background-color: var(--success-alpha);
+  color: var(--success-color);
+}
+
+.typeLabel.typeOptimization {
+  background-color: var(--primary-alpha);
+  color: var(--primary-color);
+}
+
+.typeLabel.typeOpportunity {
+  background-color: var(--info-alpha);
+  color: var(--info-color);
+}
+
+.typeLabel.typeDynamic {
+  background-color: var(--secondary-alpha);
+  color: var(--secondary-color);
+}
+
+.typeLabel.typeDefault {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.confidenceSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  min-width: 70px;
+}
+
+.confidenceLabel {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.confidenceValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .priceComparison {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.priceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.priceLabel {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .currentPrice {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-secondary);
-  text-decoration: line-through;
+  font-family: var(--font-mono);
+}
+
+.suggestedPrice {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
   font-family: var(--font-mono);
 }
 
@@ -50,131 +182,101 @@
   flex-shrink: 0;
 }
 
-.recommendedPrice {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  font-family: var(--font-mono);
+.priceChange {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.priceChange {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.875rem;
+.changeValue {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
 }
 
-.priceChange.increase {
+.changeValue.increase {
   background-color: var(--success-alpha);
   color: var(--success-color);
 }
 
-.priceChange.decrease {
+.changeValue.decrease {
   background-color: var(--error-alpha);
   color: var(--error-color);
 }
 
-/* Confidence Badge */
-.confidence {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  min-width: 80px;
+.marginInfo {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
-.confidenceLabel {
+.impactSection {
+  margin-bottom: 1rem;
+}
+
+.impactTitle {
   font-size: 0.75rem;
-  color: inherit;
-  opacity: 0.8;
-  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
 }
 
-.confidenceValue {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: inherit;
-}
-
-.confidenceHigh {
-  background-color: var(--success-alpha);
-  color: var(--success-color);
-}
-
-.confidenceMedium {
-  background-color: var(--warning-alpha);
-  color: var(--warning-color);
-}
-
-.confidenceLow {
-  background-color: var(--error-alpha);
-  color: var(--error-color);
-}
-
-/* Impact */
-.impact {
-  display: flex;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background-color: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-md);
+.impactMetrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.5rem;
 }
 
 .impactItem {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
 }
 
 .impactLabel {
-  font-size: 0.8125rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .impactValue {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
   font-family: var(--font-mono);
 }
 
-.impactValue.positive {
-  color: var(--success-color);
-}
-
-.impactValue.negative {
-  color: var(--error-color);
-}
-
-/* Reasoning */
 .reasoning {
-  padding: var(--spacing-md);
+  padding: 0.75rem;
   background-color: var(--info-alpha);
   border-left: 3px solid var(--info-color);
   border-radius: var(--radius-sm);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 1rem;
 }
 
 .reasoningTitle {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .reasoningText {
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 0.75rem;
+  line-height: 1.5;
   color: var(--text-secondary);
   margin: 0;
 }
 
-/* Actions */
 .actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: 0.5rem;
   justify-content: flex-end;
 }
 
@@ -183,7 +285,9 @@
   background-color: var(--bg-secondary);
 }
 
-[data-theme='dark'] .impact {
+[data-theme='dark'] .priceComparison,
+[data-theme='dark'] .impactItem,
+[data-theme='dark'] .confidenceSection {
   background-color: var(--bg-tertiary);
 }
 
@@ -191,27 +295,29 @@
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
+    gap: var(--spacing-sm);
   }
 
-  .confidence {
+  .typeIndicator {
+    align-items: center;
+  }
+
+  .confidenceSection {
     align-self: flex-start;
   }
 
   .priceComparison {
-    font-size: 0.875rem;
-  }
-
-  .currentPrice {
-    font-size: 1rem;
-  }
-
-  .recommendedPrice {
-    font-size: 1.125rem;
-  }
-
-  .impact {
     flex-direction: column;
     gap: var(--spacing-md);
+    text-align: center;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+
+  .impactMetrics {
+    grid-template-columns: 1fr;
   }
 
   .actions {

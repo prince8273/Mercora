@@ -57,10 +57,24 @@ export default function SettingsPage() {
   // Save preferences to localStorage
   const handleSavePreferences = async (preferences) => {
     try {
+      const oldPreferences = initialPreferences;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
       console.log('Preferences saved:', preferences);
+      
       // Update initialPreferences to reflect the saved state
       setInitialPreferences(preferences);
+      
+      // Dispatch custom event for same-tab notification AFTER updating state
+      // Check if defaultDateRange changed
+      if (oldPreferences?.defaultDateRange !== preferences.defaultDateRange) {
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('preferencesChanged', {
+            detail: { preferences, oldPreferences }
+          }));
+        }, 100);
+      }
+      
       // Change language if it was updated
       if (preferences.language !== i18n.language) {
         i18n.changeLanguage(preferences.language);

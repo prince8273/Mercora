@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SearchBar } from '../SearchBar';
 import { Badge } from '../../atoms/Badge';
+import { formatPrice } from '../../../utils/currency';
 import styles from './ProductSelector.module.css';
 
 export const ProductSelector = ({
@@ -110,7 +111,7 @@ export const ProductSelector = ({
                     )}
                   </div>
                   {product.price && (
-                    <div className={styles.productPrice}>${product.price}</div>
+                    <div className={styles.productPrice}>{formatPrice(product.price)}</div>
                   )}
                 </label>
               ))

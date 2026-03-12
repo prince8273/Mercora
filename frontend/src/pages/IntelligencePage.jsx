@@ -61,8 +61,8 @@ export default function IntelligencePage() {
                 badge: data.badge,
                 badgeVariant: data.badge_variant,
                 metrics: [
-                  data.current_price && { label: 'Current', value: `$${data.current_price}` },
-                  data.competitor_price && { label: 'Competitor', value: `$${data.competitor_price}` },
+                  data.current_price && { label: 'Current', value: `₹${data.current_price}` },
+                  data.competitor_price && { label: 'Competitor', value: `₹${data.competitor_price}` },
                   data.gap_percentage && { label: 'Gap', value: `${data.gap_percentage}%` }
                 ].filter(Boolean)
               };

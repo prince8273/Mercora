@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { ChartContainer } from '../../../components/molecules/ChartContainer';
 import { Button } from '../../../components/atoms/Button';
+import { formatPrice } from '../../../utils/currency';
 import styles from './PriceTrendChart.module.css';
 
 const TIME_RANGES = [
@@ -33,6 +34,19 @@ export const PriceTrendChart = ({
 }) => {
   const [timeRange, setTimeRange] = useState('30d');
   const [hiddenLines, setHiddenLines] = useState(new Set());
+
+  // Debug: Log data changes
+  React.useEffect(() => {
+    console.log('PriceTrendChart data updated:', data);
+    console.log('Latest data point:', data[data.length - 1]);
+    if (data.length > 0) {
+      console.log('Price range in chart:', {
+        min: Math.min(...data.map(d => d.yourPrice || 0)),
+        max: Math.max(...data.map(d => d.yourPrice || 0)),
+        latest: data[data.length - 1]?.yourPrice
+      });
+    }
+  }, [data]);
 
   const colors = {
     yourPrice: 'var(--primary-color)',
@@ -61,12 +75,8 @@ export const PriceTrendChart = ({
     });
   };
 
-  const formatPrice = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
+  const formatPriceValue = (value) => {
+    return formatPrice(value); // Use centralized currency utility
   };
 
   const formatDate = (value) => {
@@ -92,7 +102,7 @@ export const PriceTrendChart = ({
               />
               <span className={styles.tooltipName}>{entry.name}:</span>
               <span className={styles.tooltipValue}>
-                {formatPrice(entry.value)}
+                {formatPriceValue(entry.value)}
               </span>
             </div>
           ))}
@@ -162,7 +172,7 @@ export const PriceTrendChart = ({
               style={{ fontSize: '0.75rem' }}
             />
             <YAxis
-              tickFormatter={formatPrice}
+              tickFormatter={formatPriceValue}
               stroke="var(--text-tertiary)"
               style={{ fontSize: '0.75rem' }}
             />
