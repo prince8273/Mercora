@@ -5,7 +5,7 @@ import AuthLayout from '../components/layouts/AuthLayout'
 import PageErrorBoundary from '../components/feedback/ErrorBoundary/PageErrorBoundary'
 
 // Pages
-import LandingPage from '../pages/LandingPage'
+import ModernLandingPage from '../pages/ModernLandingPage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
 import OverviewPage from '../pages/OverviewPage'
@@ -14,6 +14,9 @@ import PricingPage from '../pages/PricingPage'
 import SentimentPage from '../pages/SentimentPage'
 import ForecastPage from '../pages/ForecastPage'
 import SettingsPage from '../pages/SettingsPage'
+import { DemoBackgroundBeams } from '../components/demo/DemoBackgroundBeams'
+import VideoDemo from '../pages/VideoDemo'
+import Simple11xDemo from '../pages/Simple11xDemo'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -46,8 +49,21 @@ function PublicRoute({ children }) {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Landing Page - Public */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Modern Landing Page - Public (Main Landing Page) */}
+      <Route path="/" element={<ModernLandingPage />} />
+      <Route path="/modern" element={<ModernLandingPage />} />
+      
+      {/* Demo BackgroundBeams - Public */}
+      <Route path="/demo-beams" element={<DemoBackgroundBeams />} />
+      
+      {/* Video Demo - Public */}
+      <Route path="/video-demo" element={<VideoDemo />} />
+      
+      {/* Simple 11x Demo - Public */}
+      <Route path="/11x-demo" element={<Simple11xDemo />} />
+      
+      {/* Temporary redirect for /landing to main page */}
+      <Route path="/landing" element={<Navigate to="/" replace />} />
       
       {/* Public Routes */}
       <Route
