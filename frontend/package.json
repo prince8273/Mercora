@@ -12,28 +12,37 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@tanstack/react-query": "^5.0.0",
     "@tanstack/react-query-devtools": "^5.0.0",
     "@tanstack/react-virtual": "^3.13.18",
     "axios": "^1.6.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
     "date-fns": "^3.0.0",
+    "framer-motion": "^12.36.0",
     "lucide-react": "^0.300.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "recharts": "^2.10.0",
     "socket.io-client": "^4.6.0",
+    "tailwind-merge": "^3.5.0",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.5.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.27",
     "happy-dom": "^20.7.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
     "vite": "^5.0.0",
     "vitest": "^4.0.18"
   }
