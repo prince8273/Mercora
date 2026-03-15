@@ -48,3 +48,6 @@ htmlcov/
 # Logs
 *.log
 logs/
+
+# Kiro AI Development Files
+.kiro/
