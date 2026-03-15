@@ -133,7 +133,7 @@ export function AuthProvider({ children }) {
     setTenant(null)
     setIsAuthenticated(false)
 
-    navigate('/login')
+    navigate('/')
   }
 
   const switchTenant = async (tenantId) => {

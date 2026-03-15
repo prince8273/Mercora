@@ -5,6 +5,7 @@ import AuthLayout from '../components/layouts/AuthLayout'
 import PageErrorBoundary from '../components/feedback/ErrorBoundary/PageErrorBoundary'
 
 // Pages
+import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
 import OverviewPage from '../pages/OverviewPage'
@@ -22,7 +23,7 @@ function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   return children
@@ -36,7 +37,7 @@ function PublicRoute({ children }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/overview" replace />
+    return <Navigate to="/dashboard/overview" replace />
   }
 
   return children
@@ -45,6 +46,9 @@ function PublicRoute({ children }) {
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Landing Page - Public */}
+      <Route path="/" element={<LandingPage />} />
+      
       {/* Public Routes */}
       <Route
         path="/login"
@@ -67,17 +71,16 @@ export default function AppRoutes() {
         }
       />
 
-
       {/* Protected Routes */}
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <AppShell />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/overview" replace />} />
+        <Route index element={<Navigate to="/dashboard/overview" replace />} />
         <Route path="overview" element={<PageErrorBoundary><OverviewPage /></PageErrorBoundary>} />
         <Route path="intelligence" element={<PageErrorBoundary><IntelligencePage /></PageErrorBoundary>} />
         <Route path="pricing" element={<PageErrorBoundary><PricingPage /></PageErrorBoundary>} />
@@ -86,8 +89,16 @@ export default function AppRoutes() {
         <Route path="settings" element={<PageErrorBoundary><SettingsPage /></PageErrorBoundary>} />
       </Route>
 
+      {/* Redirect old routes */}
+      <Route path="/overview" element={<Navigate to="/dashboard/overview" replace />} />
+      <Route path="/intelligence" element={<Navigate to="/dashboard/intelligence" replace />} />
+      <Route path="/pricing" element={<Navigate to="/dashboard/pricing" replace />} />
+      <Route path="/sentiment" element={<Navigate to="/dashboard/sentiment" replace />} />
+      <Route path="/forecast" element={<Navigate to="/dashboard/forecast" replace />} />
+      <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
+
       {/* Catch all */}
-      <Route path="*" element={<Navigate to="/overview" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
