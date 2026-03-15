@@ -232,6 +232,125 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="pricing-section">
+        <div className="section-container">
+          <div className="section-header">
+            <h2 className="section-title">Simple, Transparent Pricing</h2>
+            <p className="section-description">Choose the plan that fits your business needs</p>
+          </div>
+          <div className="pricing-grid">
+            <div className="pricing-card">
+              <div className="pricing-header">
+                <h3 className="pricing-title">Starter</h3>
+                <div className="pricing-price">
+                  <span className="price-currency">$</span>
+                  <span className="price-amount">29</span>
+                  <span className="price-period">/month</span>
+                </div>
+                <p className="pricing-description">Perfect for small businesses getting started</p>
+              </div>
+              <div className="pricing-features">
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Up to 1,000 products</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Basic pricing optimization</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Email support</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Monthly reports</span>
+                </div>
+              </div>
+              <Link to="/signup" className="pricing-button pricing-button-outline">
+                Start Free Trial
+              </Link>
+            </div>
+
+            <div className="pricing-card pricing-card-popular">
+              <div className="popular-badge">Most Popular</div>
+              <div className="pricing-header">
+                <h3 className="pricing-title">Professional</h3>
+                <div className="pricing-price">
+                  <span className="price-currency">$</span>
+                  <span className="price-amount">99</span>
+                  <span className="price-period">/month</span>
+                </div>
+                <p className="pricing-description">Advanced features for growing businesses</p>
+              </div>
+              <div className="pricing-features">
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Up to 10,000 products</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>AI-powered insights</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Demand forecasting</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Priority support</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Real-time analytics</span>
+                </div>
+              </div>
+              <Link to="/signup" className="pricing-button pricing-button-primary">
+                Start Free Trial
+              </Link>
+            </div>
+
+            <div className="pricing-card">
+              <div className="pricing-header">
+                <h3 className="pricing-title">Enterprise</h3>
+                <div className="pricing-price">
+                  <span className="price-currency">$</span>
+                  <span className="price-amount">299</span>
+                  <span className="price-period">/month</span>
+                </div>
+                <p className="pricing-description">Full-scale solution for large enterprises</p>
+              </div>
+              <div className="pricing-features">
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Unlimited products</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Custom AI models</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>API access</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Dedicated support</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-check">✓</span>
+                  <span>Custom integrations</span>
+                </div>
+              </div>
+              <Link to="/signup" className="pricing-button pricing-button-outline">
+                Contact Sales
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="cta-section">
         <div className="section-container">
