@@ -3,27 +3,30 @@
 }
 
 .auth-title {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #1c1917;
   margin: 0 0 0.5rem 0;
   text-align: center;
 }
 
 .auth-subtitle {
-  color: var(--text-secondary);
+  color: #57534e;
   text-align: center;
   margin: 0 0 2rem 0;
+  font-weight: 500;
 }
 
 .error-message {
   padding: 0.75rem 1rem;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  color: #dc2626;
   font-size: 0.875rem;
   margin-bottom: 1.5rem;
+  backdrop-filter: blur(10px);
 }
 
 .auth-form {
@@ -35,16 +38,59 @@
 .auth-footer {
   text-align: center;
   margin-top: 1.5rem;
-  color: var(--text-secondary);
+  color: #57534e;
   font-size: 0.95rem;
 }
 
 .auth-link {
-  color: var(--primary-color);
-  font-weight: 500;
+  color: #c97a2b;
+  font-weight: 600;
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .auth-link:hover {
+  color: #a16207;
   text-decoration: underline;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.select-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  color: #1c1917;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: #c97a2b;
+  box-shadow: 0 0 0 3px rgba(201, 122, 43, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
 }

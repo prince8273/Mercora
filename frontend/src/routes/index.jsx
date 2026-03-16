@@ -14,9 +14,6 @@ import PricingPage from '../pages/PricingPage'
 import SentimentPage from '../pages/SentimentPage'
 import ForecastPage from '../pages/ForecastPage'
 import SettingsPage from '../pages/SettingsPage'
-import { DemoBackgroundBeams } from '../components/demo/DemoBackgroundBeams'
-import VideoDemo from '../pages/VideoDemo'
-import Simple11xDemo from '../pages/Simple11xDemo'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -47,24 +44,26 @@ function PublicRoute({ children }) {
 }
 
 export default function AppRoutes() {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <div className="loading-screen">Loading...</div>
+  }
+
   return (
     <Routes>
-      {/* Modern Landing Page - Public (Main Landing Page) */}
-      <Route path="/" element={<ModernLandingPage />} />
-      <Route path="/modern" element={<ModernLandingPage />} />
-      
-      {/* Demo BackgroundBeams - Public */}
-      <Route path="/demo-beams" element={<DemoBackgroundBeams />} />
-      
-      {/* Video Demo - Public */}
-      <Route path="/video-demo" element={<VideoDemo />} />
-      
-      {/* Simple 11x Demo - Public */}
-      <Route path="/11x-demo" element={<Simple11xDemo />} />
-      
-      {/* Temporary redirect for /landing to main page */}
-      <Route path="/landing" element={<Navigate to="/" replace />} />
-      
+      {/* Root Route - Authentication-aware landing page */}
+      <Route 
+        path="/" 
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard/overview" replace />
+          ) : (
+            <ModernLandingPage />
+          )
+        } 
+      />
+
       {/* Public Routes */}
       <Route
         path="/login"
@@ -105,7 +104,7 @@ export default function AppRoutes() {
         <Route path="settings" element={<PageErrorBoundary><SettingsPage /></PageErrorBoundary>} />
       </Route>
 
-      {/* Redirect old routes */}
+      {/* Legacy route redirects */}
       <Route path="/overview" element={<Navigate to="/dashboard/overview" replace />} />
       <Route path="/intelligence" element={<Navigate to="/dashboard/intelligence" replace />} />
       <Route path="/pricing" element={<Navigate to="/dashboard/pricing" replace />} />
