@@ -22,7 +22,7 @@ const Simple11xDemo = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-800 via-orange-700 to-red-800 relative overflow-hidden">
-      <style jsx>{`
+      <style>{`
         .hero-heading {
           font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-size: 96px;

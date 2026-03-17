@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import emailjs from '@emailjs/browser';
+import { EMAILJS_CONFIG } from '../../config/emailjs';
 
 const ContactSupportModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ const ContactSupportModal = ({ isOpen, onClose }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -22,43 +25,127 @@ const ContactSupportModal = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
     setSubmitStatus(null);
 
+    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('Form data:', formData);
+
     try {
-      // Replace this with your actual backend API endpoint
-      // Example: 
-      // const response = await fetch('/api/contact-support', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
+      // Simple test first - just try to send one email
+      console.log('Testing EmailJS with simple parameters...');
       
-      // For now, we'll log the message (you can see it in browser console)
-      console.log('Contact Support Message:', {
-        ...formData,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      });
+      const testParams = {
+        to_name: formData.name,
+        to_email: formData.email,
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        reply_to: formData.email,
+        // Ensure recipient email is set
+        user_email: formData.email,
+        recipient_email: formData.email
+      };
+
+      console.log('Test parameters:', testParams);
+      console.log('Service ID:', EMAILJS_CONFIG.SERVICE_ID);
+      console.log('Public Key:', EMAILJS_CONFIG.PUBLIC_KEY);
+      console.log('Template ID:', EMAILJS_CONFIG.TEMPLATES.AUTORESPONSE);
+
+      // Send auto-response to user first
+      console.log('Sending auto-response to user...');
+      await emailjs.send(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATES.AUTORESPONSE,
+        testParams,
+        EMAILJS_CONFIG.PUBLIC_KEY
+      );
+      console.log('Auto-response sent successfully');
+
+      // Send main contact form to you
+      const mainEmailParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        to_name: 'Harshit Kumar',
+        to_email: 'harshitkumar94306@gmail.com',
+        reply_to: formData.email,
+        // Additional formatting parameters
+        current_date: new Date().toLocaleDateString('en-IN', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        website_url: window.location.origin
+      };
+
+      console.log('Sending main email to you...', mainEmailParams);
+      await emailjs.send(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATES.CONTACT,
+        mainEmailParams,
+        EMAILJS_CONFIG.PUBLIC_KEY
+      );
+      console.log('Main email sent successfully to harshitkumar94306@gmail.com');
+
+      console.log('EmailJS SUCCESS: Both emails sent');
       
-      // You can also send this to an email service like EmailJS, Formspree, or Netlify Forms
-      // Example with EmailJS:
-      // await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', formData, 'YOUR_PUBLIC_KEY');
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // If we get here, EmailJS is working
       setSubmitStatus('success');
+      setSubmittedEmail(formData.email);
       setFormData({ name: '', email: '', subject: '', message: '' });
       
-      // Close modal after 2 seconds
       setTimeout(() => {
         onClose();
         setSubmitStatus(null);
-      }, 2000);
+        setSubmittedEmail('');
+      }, 5000);
       
     } catch (error) {
-      console.error('Error sending message:', error);
-      setSubmitStatus('error');
+      console.error('=== EMAILJS ERROR ===');
+      console.error('Error object:', error);
+      console.error('Error message:', error.message);
+      console.error('Error text:', error.text);
+      console.error('Error status:', error.status);
+      console.error('Full error:', JSON.stringify(error, null, 2));
+      
+      // Try FormSubmit as fallback
+      console.log('Trying FormSubmit fallback...');
+      try {
+        const formData_submit = new FormData();
+        formData_submit.append('name', formData.name);
+        formData_submit.append('email', formData.email);
+        formData_submit.append('subject', formData.subject);
+        formData_submit.append('message', formData.message);
+        formData_submit.append('_subject', `Mercora Contact: ${formData.subject}`);
+        formData_submit.append('_captcha', 'false');
+        formData_submit.append('_template', 'table');
+
+        const fallbackResponse = await fetch('https://formsubmit.co/c9bb7b4974a13716407d50b0c781b930', {
+          method: 'POST',
+          body: formData_submit
+        });
+
+        if (fallbackResponse.ok) {
+          console.log('FormSubmit fallback successful');
+          setSubmitStatus('success');
+          setSubmittedEmail(formData.email);
+          setFormData({ name: '', email: '', subject: '', message: '' });
+          
+          setTimeout(() => {
+            onClose();
+            setSubmitStatus(null);
+            setSubmittedEmail('');
+          }, 5000);
+        } else {
+          throw new Error(`FormSubmit failed: ${fallbackResponse.status}`);
+        }
+      } catch (fallbackError) {
+        console.error('FormSubmit also failed:', fallbackError);
+        setSubmitStatus('error');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -96,8 +183,10 @@ const ContactSupportModal = ({ isOpen, onClose }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h4 className="text-lg font-semibold text-stone-900 mb-2">Message Sent!</h4>
-                <p className="text-stone-600">We'll get back to you as soon as possible.</p>
+                <h4 className="text-lg font-semibold text-stone-900 mb-2">Thank You!</h4>
+                <p className="text-stone-600">
+                  Your message has been sent successfully. We'll get back to you soon.
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">

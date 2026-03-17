@@ -10,7 +10,8 @@ const ModernLandingPage = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  // const [zoomProgress, setZoomProgress] = useState(0); // COMMENTED OUT - for zoom effect
+  const [zoomProgress, setZoomProgress] = useState(0); // for zoom effect
+  const [showScrollButton, setShowScrollButton] = useState(false); // for scroll to top button
   
   // Vellum-inspired task completion feed
   const completedTasks = [
@@ -30,8 +31,10 @@ const ModernLandingPage = () => {
       const scrollPosition = window.scrollY;
       setIsScrolled(scrollPosition > 100);
       
-      // COMMENTED OUT - Zoom effect calculation
-      /*
+      // Show scroll to top button after scrolling 300px
+      setShowScrollButton(scrollPosition > 300);
+      
+      // Zoom effect calculation
       // Calculate zoom progress based on scroll position
       // Adjust these values based on your layout - this should correspond to the Listen to Vivek section
       const zoomStartPosition = 3200; // Start zoom effect when entering the section
@@ -45,7 +48,6 @@ const ModernLandingPage = () => {
       } else {
         setZoomProgress(1);
       }
-      */
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -73,9 +75,16 @@ const ModernLandingPage = () => {
     setIsContactModalOpen(true);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 overflow-hidden">
-      <style jsx>{`
+      <style>{`
         .hero-heading {
           font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
           font-size: 96px;
@@ -183,14 +192,31 @@ const ModernLandingPage = () => {
         <div className="fixed bottom-6 right-6 z-40">
           <button 
             onClick={handleContactSupport}
-            className="bg-stone-900 text-white px-6 py-3 rounded-full shadow-lg hover:bg-stone-800 transition-all duration-300 flex items-center gap-3"
+            className="bg-gradient-to-r from-stone-800 to-stone-900 text-white px-6 py-3 rounded-full shadow-2xl hover:from-stone-700 hover:to-stone-800 transition-all duration-300 flex items-center gap-3 border-2 border-amber-500/30 hover:border-amber-500/50 hover:scale-105"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <span className="text-sm font-medium">Contact Support</span>
+            <span className="text-sm font-semibold">Contact Support</span>
+          </button>
+        </div>
+
+        {/* Scroll to Top Button */}
+        <div className={`fixed bottom-20 right-6 z-40 transition-all duration-300 ${
+          showScrollButton 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}>
+          <button 
+            onClick={scrollToTop}
+            className="bg-white/90 backdrop-blur-sm text-stone-900 p-3 rounded-full shadow-2xl hover:bg-white hover:scale-110 transition-all duration-300 border-2 border-stone-200 hover:border-amber-500/50"
+            title="Scroll to top"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
           </button>
         </div>
       </section>
@@ -526,7 +552,7 @@ const ModernLandingPage = () => {
 
           {/* Animated Marquee Benefit Tags */}
           <div className="relative overflow-hidden">
-            <style jsx>{`
+            <style>{`
               @keyframes marquee-rtl {
                 0% { transform: translateX(0%); }
                 100% { transform: translateX(-50%); }
@@ -738,8 +764,7 @@ const ModernLandingPage = () => {
         </div>
       </section>
 
-      {/* Listen to Vivek - Zoom Effect Section - COMMENTED OUT FOR NOW */}
-      {/* 
+      {/* Listen to Vivek - Zoom Effect Section */}
       <section className="relative h-screen overflow-hidden bg-stone-50">
         <div 
           className="absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-out"
@@ -876,7 +901,6 @@ const ModernLandingPage = () => {
           </button>
         </div>
       </section>
-      */}
 
       {/* Simple Value Proposition - Vellum Style */}
       <section className="py-16 bg-gradient-to-br from-stone-100 to-amber-50">
