@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/atoms/Button'
@@ -64,6 +64,14 @@ export default function SignupPage() {
 
     setIsLoading(false)
   }
+
+  // Add custom background style for signup page
+  React.useEffect(() => {
+    document.body.classList.add('signup-page-body')
+    return () => {
+      document.body.classList.remove('signup-page-body')
+    }
+  }, [])
 
   return (
     <div className="auth-page">

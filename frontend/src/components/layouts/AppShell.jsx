@@ -1,14 +1,14 @@
 import { Outlet } from 'react-router-dom'
-import TopBar from '../organisms/TopBar'
-import SideNav from '../organisms/SideNav'
+import ModernTopBar from '../organisms/ModernTopBar'
+import ModernSideNav from '../organisms/ModernSideNav'
 import './AppShell.css'
 
 export default function AppShell() {
   return (
     <div className="app-shell">
-      <TopBar />
+      <ModernTopBar />
       <div className="app-body">
-        <SideNav />
+        <ModernSideNav />
         <main className="main-content">
           <Outlet />
         </main>

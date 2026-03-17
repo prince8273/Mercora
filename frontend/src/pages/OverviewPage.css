@@ -1,21 +1,81 @@
 .page {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
+  font-family: var(--font-sans);
+}
+
+/* Typography improvements - even smaller fonts */
+.page h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.page h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.page h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.page p {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #4b5563;
+}
+
+/* Improve button text size */
+.page button {
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+/* Improve metric card text sizes */
+.page .metric-card h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.page .metric-card .metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.1;
+}
+
+.page .metric-card .metric-change {
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+.page .metric-card .metric-period {
+  font-size: 0.5rem;
+  color: #6b7280;
 }
 
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .content-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .chart-section {
@@ -39,7 +99,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -48,7 +108,7 @@
 
 .error-state p {
   color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Tablet */
@@ -72,17 +132,17 @@
 /* Mobile */
 @media (max-width: 768px) {
   .page {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   .kpi-grid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
   }
 
   .content-grid {
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
   }
 }
 

@@ -6,6 +6,7 @@ import PageErrorBoundary from '../components/feedback/ErrorBoundary/PageErrorBou
 
 // Pages
 import ModernLandingPage from '../pages/ModernLandingPage'
+import AboutUsPage from '../pages/AboutUsPage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
 import OverviewPage from '../pages/OverviewPage'
@@ -84,6 +85,12 @@ export default function AppRoutes() {
             </AuthLayout>
           </PublicRoute>
         }
+      />
+      
+      {/* About Us Route */}
+      <Route
+        path="/about-us"
+        element={<AboutUsPage />}
       />
 
       {/* Protected Routes */}

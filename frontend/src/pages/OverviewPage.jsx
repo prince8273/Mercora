@@ -153,7 +153,6 @@ export default function OverviewPage() {
     <div className="page">
       <PageHeader
         title={t('dashboard.title')}
-        breadcrumbs={[{ label: t('dashboard.title'), path: '/overview' }]}
         actions={
           <Button onClick={handleRefresh} variant="secondary" size="sm">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">

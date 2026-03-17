@@ -1,7 +1,7 @@
 .header {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
-  padding: 1.5rem 2rem;
+  padding: 0.75rem 1rem;
 }
 
 .content {
@@ -10,7 +10,7 @@
 }
 
 .breadcrumbs {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .breadcrumbList {
@@ -56,7 +56,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .titleContainer {
@@ -65,7 +65,7 @@
 }
 
 .title {
-  font-size: 1.875rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;

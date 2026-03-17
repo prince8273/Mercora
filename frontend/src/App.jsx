@@ -1,6 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from './lib/queryClient'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -24,7 +23,6 @@ function App() {
             </ToastProvider>
           </ThemeProvider>
         </BrowserRouter>
-        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </GlobalErrorBoundary>
   )

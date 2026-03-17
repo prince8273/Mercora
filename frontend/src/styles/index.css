@@ -119,9 +119,7 @@
   --radius-full: 9999px;
   
   /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code',
     'Fira Mono', 'Roboto Mono', monospace;
 }
@@ -146,7 +144,7 @@
 
 /* Base Styles */
 html {
-  font-size: 16px;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -156,37 +154,45 @@ body {
   color: var(--text-primary);
   background-color: var(--bg-primary);
   line-height: 1.5;
+  font-size: 0.875rem;
 }
 
-/* Typography */
+/* Typography - Smaller sizes than initial */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.2;
   color: var(--text-primary);
+  margin-bottom: 0.5rem;
 }
 
 h1 {
-  font-size: 2.25rem;
+  font-size: 1.875rem;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 1.875rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 h4 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 h5 {
-  font-size: 1.125rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 h6 {
-  font-size: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 p {

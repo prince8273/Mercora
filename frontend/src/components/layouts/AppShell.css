@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background-color: #f9fafb;
 }
 
 .app-body {
@@ -14,12 +15,12 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  background-color: var(--bg-secondary);
-  padding: 2rem;
+  background-color: #f9fafb;
+  padding: 0.5rem 1rem;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    padding: 1rem;
+    padding: 0.5rem;
   }
 }

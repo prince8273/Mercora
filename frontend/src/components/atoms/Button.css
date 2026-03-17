@@ -8,20 +8,27 @@
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-family: var(--font-sans);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 44px;
+  position: relative;
 }
 
 /* Variants */
 .btn-primary {
-  background: linear-gradient(135deg, #1c1917 0%, #292524 100%);
+  background: #9ca3af;
   color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  background: linear-gradient(135deg, #292524 0%, #1c1917 100%);
+  background: #6b7280;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
 .btn-secondary {
@@ -82,6 +89,12 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Ensure button is always visible */
+.btn:not(.btn-disabled) {
+  opacity: 1;
+  visibility: visible;
 }
 
 .btn-spinner {
