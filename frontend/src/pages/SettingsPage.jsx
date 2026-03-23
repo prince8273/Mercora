@@ -67,8 +67,9 @@ export default function SettingsPage() {
       setInitialPreferences(preferences);
       
       // Dispatch custom event for same-tab notification AFTER updating state
-      // Check if defaultDateRange changed
-      if (oldPreferences?.defaultDateRange !== preferences.defaultDateRange) {
+      // Check if defaultDateRange or theme changed
+      if (oldPreferences?.defaultDateRange !== preferences.defaultDateRange || 
+          oldPreferences?.theme !== preferences.theme) {
         // Small delay to ensure state is updated
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('preferencesChanged', {

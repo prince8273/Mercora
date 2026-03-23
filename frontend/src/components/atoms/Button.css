@@ -3,81 +3,74 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 600;
-  border-radius: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: var(--font-sans);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-height: 44px;
-  position: relative;
+  transition: all 0.2s;
+  font-family: inherit;
 }
 
 /* Variants */
 .btn-primary {
-  background: #9ca3af;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 0.95rem;
+  background: var(--primary-color);
+  color: white !important;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  background: #6b7280;
+  background: var(--primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(255, 248, 240, 0.8);
-  color: #1c1917;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  background: rgba(255, 248, 240, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--bg-tertiary);
 }
 
 .btn-outline {
   background: transparent;
-  color: #c97a2b;
-  border: 1px solid #c97a2b;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
 .btn-outline:hover:not(.btn-disabled) {
-  background: rgba(201, 122, 43, 0.1);
-  transform: translateY(-1px);
+  background: var(--primary-light);
 }
 
 .btn-ghost {
   background: transparent;
-  color: #1c1917;
+  color: var(--text-primary);
 }
 
 .btn-ghost:hover:not(.btn-disabled) {
-  background: rgba(255, 248, 240, 0.8);
+  background: var(--bg-secondary);
 }
 
 /* Sizes */
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
+  border-radius: 50px;
 }
 
 .btn-md {
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.95rem;
+  border-radius: 50px;
 }
 
 .btn-lg {
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
+  border-radius: 50px;
 }
 
 /* States */
@@ -88,13 +81,6 @@
 .btn-disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none !important;
-}
-
-/* Ensure button is always visible */
-.btn:not(.btn-disabled) {
-  opacity: 1;
-  visibility: visible;
 }
 
 .btn-spinner {

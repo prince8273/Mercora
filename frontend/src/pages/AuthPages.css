@@ -3,30 +3,29 @@
 }
 
 .auth-title {
-  font-family: var(--font-sans);
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1c1917;
+  color: #000000;
   margin: 0 0 0.5rem 0;
-  text-align: center;
+  text-align: left;
 }
 
 .auth-subtitle {
-  color: #57534e;
-  text-align: center;
+  color: #4b5563;
+  text-align: left;
   margin: 0 0 2rem 0;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 0.95rem;
 }
 
 .error-message {
   padding: 0.75rem 1rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
-  color: #dc2626;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
   font-size: 0.875rem;
   margin-bottom: 1.5rem;
-  backdrop-filter: blur(10px);
 }
 
 .auth-form {
@@ -35,70 +34,27 @@
   gap: 1.25rem;
 }
 
+/* Input labels - black text */
+.auth-form label {
+  color: #000000;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
 .auth-footer {
   text-align: center;
   margin-top: 1.5rem;
-  color: #57534e;
+  color: #6b7280;
   font-size: 0.95rem;
 }
 
 .auth-link {
-  color: #c97a2b;
+  color: var(--primary-color);
   font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
 
 .auth-link:hover {
-  color: #a16207;
-  text-decoration: underline;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 640px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.select-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.select-input {
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-family: var(--font-sans);
-  color: #1c1917;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-}
-
-.select-input:focus {
-  outline: none;
-  border-color: #c97a2b;
-  box-shadow: 0 0 0 3px rgba(201, 122, 43, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-}
-
-/* Custom background for signup page only */
-.signup-page-body .auth-layout::before {
-  background-image: url('/images/desert-login.jpg');
-  background-size: cover;
-  background-position: center;
-  opacity: 1.0;
+  text-decoration: none;
+  opacity: 0.8;
 }

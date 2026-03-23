@@ -33,9 +33,7 @@ const AboutUsPage = () => {
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             {/* Logo */}
             <div className="flex items-center">
-              <a href="/" className="no-underline" style={{textDecoration: 'none', outline: 'none'}} onMouseOver={(e) => e.target.style.opacity = '1'} onMouseOut={(e) => e.target.style.opacity = '1'}>
-                <EcommerceLogo />
-              </a>
+              <EcommerceLogo />
             </div>
             
             {/* Navigation Links */}

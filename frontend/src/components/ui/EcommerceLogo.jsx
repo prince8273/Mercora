@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const EcommerceLogo = ({ className = "", size = "default" }) => {
+const EcommerceLogo = ({ className = "", size = "default", clickable = true }) => {
   const sizeClasses = {
     small: "text-lg gap-1",
     default: "text-2xl gap-2", 
@@ -13,13 +14,31 @@ const EcommerceLogo = ({ className = "", size = "default" }) => {
     large: "w-10 h-10 text-xl"
   };
 
-  return (
-    <div className={`text-white font-bold flex items-center ${sizeClasses[size]} ${className}`}>
+  const content = (
+    <>
       <div className={`bg-white rounded-lg flex items-center justify-center ${iconSizes[size]}`}>
         <span className="text-stone-900 font-bold">E</span>
       </div>
       <span>Ecommerce Intelligence</span>
-    </div>
+    </>
+  );
+
+  if (!clickable) {
+    return (
+      <div className={`text-white font-bold flex items-center ${sizeClasses[size]} ${className}`}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link 
+      to="/" 
+      className={`text-white font-bold flex items-center ${sizeClasses[size]} ${className} no-underline hover:opacity-90 transition-opacity cursor-pointer`}
+      style={{ textDecoration: 'none' }}
+    >
+      {content}
+    </Link>
   );
 };
 

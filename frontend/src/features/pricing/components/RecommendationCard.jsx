@@ -169,7 +169,7 @@ export const RecommendationCard = ({
           variant="primary"
           size="sm"
           onClick={() => onAccept?.(recommendation)}
-          loading={loading}
+          isLoading={loading}
         >
           Apply Pricing
         </Button>

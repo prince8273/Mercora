@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '../../../contexts/ThemeContext';
 import styles from './PreferencesPanel.module.css';
 
 export default function PreferencesPanel({ initialPreferences, onSave }) {
+  const { theme: currentTheme, setTheme } = useTheme();
+  
   const [preferences, setPreferences] = useState({
     theme: 'system',
     language: 'en',
@@ -46,6 +49,8 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
 
   const handleThemeChange = (theme) => {
     setPreferences({ ...preferences, theme });
+    // Apply theme immediately for instant feedback
+    setTheme(theme);
   };
 
   const handleInputChange = (field, value) => {
@@ -101,6 +106,7 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
             >
               <div className={styles.themeIcon}>☀️</div>
               <div className={styles.themeName}>Light</div>
+              {currentTheme === 'light' && <div className={styles.activeIndicator}>●</div>}
             </div>
             <div
               className={`${styles.themeOption} ${
@@ -110,6 +116,7 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
             >
               <div className={styles.themeIcon}>🌙</div>
               <div className={styles.themeName}>Dark</div>
+              {currentTheme === 'dark' && <div className={styles.activeIndicator}>●</div>}
             </div>
             <div
               className={`${styles.themeOption} ${
@@ -119,9 +126,12 @@ export default function PreferencesPanel({ initialPreferences, onSave }) {
             >
               <div className={styles.themeIcon}>💻</div>
               <div className={styles.themeName}>System</div>
+              {currentTheme === 'system' && <div className={styles.activeIndicator}>●</div>}
             </div>
           </div>
-          <p className={styles.description}>Choose your preferred color scheme</p>
+          <p className={styles.description}>
+            Choose your preferred color scheme. System follows your device settings.
+          </p>
         </div>
 
         {/* Language */}

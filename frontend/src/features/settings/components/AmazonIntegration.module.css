@@ -10,14 +10,14 @@
 }
 
 .title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .subtitle {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
   margin: 0;
 }
@@ -61,14 +61,14 @@
 }
 
 .statusTitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .statusSubtitle {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
   margin: 0;
 }
@@ -85,7 +85,7 @@
   color: var(--text-primary);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   transition: all 0.2s;
 }
@@ -117,7 +117,7 @@
 }
 
 .label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -132,7 +132,7 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   font-family: var(--font-mono);
   transition: all 0.2s;
 }
@@ -152,7 +152,7 @@
 }
 
 .description {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
@@ -164,7 +164,7 @@
 }
 
 .syncTitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 16px 0;
@@ -192,13 +192,13 @@
 }
 
 .syncOptionTitle {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .syncOptionDescription {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
@@ -208,7 +208,7 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -220,7 +220,7 @@
   background: var(--bg-secondary);
   border-radius: 6px;
   margin-top: 16px;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -239,7 +239,7 @@
   color: var(--text-primary);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   transition: all 0.2s;
 }
@@ -269,7 +269,7 @@
   border: 1px solid #ef4444;
   border-radius: 6px;
   color: #991b1b;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .successMessage {
@@ -278,7 +278,7 @@
   border: 1px solid #10b981;
   border-radius: 6px;
   color: #065f46;
-  font-size: 14px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
