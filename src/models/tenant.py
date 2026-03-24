@@ -43,6 +43,7 @@ class Tenant(Base):
     analytical_reports = relationship("AnalyticalReport", back_populates="tenant")
     forecast_results = relationship("ForecastResult", back_populates="tenant")
     aggregated_metrics = relationship("AggregatedMetrics", back_populates="tenant")
+    query_history = relationship("QueryHistory", back_populates="tenant")
     
     # Indexes
     __table_args__ = (

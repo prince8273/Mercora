@@ -19,6 +19,7 @@ class AgentType(str, Enum):
     DEMAND_FORECAST = "demand_forecast"
     DATA_QA = "data_qa"
     SALES = "sales"
+    GENERAL = "general"  # Universal agent for any DB question
 
 
 class Priority(str, Enum):

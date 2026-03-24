@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # Security
     secret_key: str  # No default - must be set in .env
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 480  # 8 hours — refreshed proactively by frontend
     
     # API
     api_v1_prefix: str = "/api/v1"

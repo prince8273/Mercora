@@ -6,10 +6,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from src.database import get_db
 from src.models.product import Product
 from src.models.review import Review
+from src.models.query_history import QueryHistory
 from src.services.data_service import DataService
 from src.services.cache_service import (
     make_cache_key,
@@ -268,3 +270,45 @@ async def get_dashboard_trends(
     except Exception as e:
         logger.error(f"Error fetching dashboard trends: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch trends: {str(e)}")
+
+
+@router.get("/query-history")
+async def get_dashboard_query_history(
+    request: Request,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Get recent query history for the dashboard panel.
+    Returns the last `limit` queries for the current tenant.
+    """
+    try:
+        tenant_id = get_tenant_id_from_request(request)
+
+        result = await db.execute(
+            select(QueryHistory)
+            .where(QueryHistory.tenant_id == tenant_id)
+            .order_by(QueryHistory.created_at.desc())
+            .limit(limit)
+        )
+        rows = result.scalars().all()
+
+        queries = [
+            {
+                "id": str(r.id),
+                "query": r.query_text,
+                "execution_mode": r.execution_mode,
+                "agents_executed": r.agents_executed,
+                "confidence": float(r.overall_confidence) if r.overall_confidence is not None else None,
+                "execution_time": float(r.execution_time_seconds) if r.execution_time_seconds is not None else None,
+                "status": r.status,
+                "timestamp": r.created_at.isoformat(),
+            }
+            for r in rows
+        ]
+
+        return {"total": len(queries), "queries": queries}
+
+    except Exception as e:
+        logger.error(f"Error fetching dashboard query history: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch query history: {e}")

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../components/molecules/PageHeader';
 import styles from './QueryBreakdownPage.module.css';
@@ -21,11 +22,136 @@ function SummaryText({ text }) {
   );
 }
 
-// Clean up garbled product names like "Product B0Q1BWOQIR (LAMP-LED-DESK)" → "LAMP-LED-DESK"
-function cleanProductName(name) {
-  if (!name) return 'Unknown Product';
-  const match = name.match(/\(([^)]+)\)$/);
-  return match ? match[1] : name;
+// Clean up garbled product names:
+// "Men's Cotton T-Shirt Blue (DUMBBELL-SET-20KG)" → "Men's Cotton T-Shirt Blue"
+// "Product B05F7WXX3Q (LAMP-LED-DESK)" → "LAMP-LED-DESK"  (last paren = real SKU)
+// "Product B05F7WXX3Q" → use the SKU column instead (handled at call site)
+function cleanProductName(name, sku) {
+  if (!name) return sku || 'Unknown';
+
+  // If name is just "Product <ASIN>" with no real info, use the SKU
+  if (/^Product\s+[A-Z0-9]{8,}$/.test(name.trim())) {
+    return sku || name;
+  }
+
+  // Strip all trailing (SKU-LIKE) parenthetical groups — they're data corruption
+  // SKU pattern: all-caps/digits/hyphens, 4+ chars
+  const cleaned = name.replace(/\s*\([A-Z0-9][A-Z0-9\-]{3,}\)/g, '').trim();
+  return cleaned || sku || name;
+}
+
+// Expandable insight table — rows are clickable to reveal complaints / issues
+function InsightTable({ insight }) {
+  const [expandedRow, setExpandedRow] = useState(null);
+  const isCategory = insight.title?.toLowerCase().includes('category');
+  // Time-series insights (trend data) have no product name column
+  const firstDetail = insight.details?.[0];
+  const isTimeSeries = ['revenue_trend', 'sentiment_trend'].includes(firstDetail?.analysisType);
+  const hideNameCol = isCategory || isTimeSeries;
+  const firstColLabel = isCategory ? 'Category' : isTimeSeries ? 'Month' : 'SKU / Category';
+
+  const toggle = (idx) => setExpandedRow(prev => prev === idx ? null : idx);
+
+  return (
+    <div className={styles.insightCard}>
+      <div className={styles.insightHeader}>
+        <span className={styles.insightTitle}>{insight.title}</span>
+        {insight.value && (
+          <span className={`${styles.badge} ${styles[insight.variant] || ''}`}>
+            {insight.value}
+          </span>
+        )}
+      </div>
+      <p className={styles.insightDesc}>{insight.description}</p>
+
+      {insight.details && insight.details.length > 0 && (
+        <div className={styles.detailsTable}>
+          <table>
+            <thead>
+              <tr>
+                <th>{firstColLabel}</th>
+                {!hideNameCol && <th>Name</th>}
+                {insight.details[0]?.metrics?.map((m, mi) => (
+                  <th key={mi}>{m.label}</th>
+                ))}
+                {insight.details.some(d => d.complaints != null || d.issues) && (
+                  <th>Details</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {insight.details.map((d, di) => {
+                const hasExtra = d.complaints != null || (d.issues && d.issues !== 'none detected') || (d.lowReviews && d.lowReviews.length > 0);
+                const isOpen = expandedRow === di;
+                const colSpan = (hideNameCol ? 1 : 2) + (d.metrics?.length || 0) + (hasExtra ? 1 : 0);
+                return (
+                  <>
+                    <tr
+                      key={di}
+                      className={hasExtra ? styles.clickableRow : ''}
+                      onClick={hasExtra ? () => toggle(di) : undefined}
+                      title={hasExtra ? 'Click to see details' : undefined}
+                    >
+                      <td>{d.sku}</td>
+                      {!hideNameCol && (
+                        <td>{d.name ? cleanProductName(d.name, d.sku) : '—'}</td>
+                      )}
+                      {d.metrics?.map((m, mi) => (
+                        <td key={mi}>{m.value}</td>
+                      ))}
+                      {hasExtra && (
+                        <td className={styles.expandCell}>
+                          <span className={`${styles.expandChevron} ${isOpen ? styles.chevronOpen : ''}`}>▾</span>
+                        </td>
+                      )}
+                    </tr>
+                    {isOpen && hasExtra && (
+                      <tr key={`${di}-detail`} className={styles.expandedRow}>
+                        <td colSpan={colSpan}>
+                          <div className={styles.expandedContent}>
+                            {d.complaints > 0 && (
+                              <div className={styles.expandedItem}>
+                                <span className={styles.expandedLabel}>Complaints (1–2★ reviews)</span>
+                                <span className={styles.expandedBadgeDanger}>
+                                  {d.complaints}
+                                  {d.complaintRate != null && d.complaintRate > 0 && (
+                                    <span className={styles.complaintRateNote}> ({d.complaintRate.toFixed(1)}% of buyers)</span>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                            {d.issues && d.issues !== 'none detected' && (
+                              <div className={styles.expandedItem}>
+                                <span className={styles.expandedLabel}>Issues detected</span>
+                                <span className={styles.expandedIssues}>{d.issues}</span>
+                              </div>
+                            )}
+                            {d.lowReviews && d.lowReviews.length > 0 && (
+                              <div className={styles.reviewsList}>
+                                <span className={styles.reviewsHeader}>1–2★ Customer Reviews</span>
+                                {d.lowReviews.map((rev, ri) => (
+                                  <div key={ri} className={styles.reviewItem}>
+                                    <span className={styles.reviewStars}>
+                                      {'★'.repeat(rev.rating)}{'☆'.repeat(2 - rev.rating)}
+                                    </span>
+                                    <span className={styles.reviewText}>{rev.text}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function QueryBreakdownPage() {
@@ -111,45 +237,7 @@ export default function QueryBreakdownPage() {
             <h2 className={styles.cardTitle}>Insights ({results.insights.length})</h2>
             <div className={styles.insightsList}>
               {results.insights.map((insight, i) => (
-                <div key={i} className={styles.insightCard}>
-                  <div className={styles.insightHeader}>
-                    <span className={styles.insightTitle}>{insight.title}</span>
-                    {insight.value && (
-                      <span className={`${styles.badge} ${styles[insight.variant] || ''}`}>
-                        {insight.value}
-                      </span>
-                    )}
-                  </div>
-                  <p className={styles.insightDesc}>{insight.description}</p>
-
-                  {/* Product/category details if available */}
-                  {insight.details && insight.details.length > 0 && (
-                    <div className={styles.detailsTable}>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>{insight.details[0]?.metrics ? 'SKU / Category' : 'Item'}</th>
-                            <th>Name</th>
-                            {insight.details[0]?.metrics?.map((m, mi) => (
-                              <th key={mi}>{m.label}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {insight.details.map((d, di) => (
-                            <tr key={di}>
-                              <td>{d.sku}</td>
-                              <td>{cleanProductName(d.name)}</td>
-                              {d.metrics?.map((m, mi) => (
-                                <td key={mi}>{m.value}</td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+                <InsightTable key={i} insight={insight} />
               ))}
             </div>
           </section>

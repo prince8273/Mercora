@@ -12,6 +12,7 @@ from src.models.raw_ingestion_record import RawIngestionRecord
 from src.models.analytical_report import AnalyticalReport
 from src.models.forecast_result import ForecastResult
 from src.models.aggregated_metrics import AggregatedMetrics
+from src.models.query_history import QueryHistory
 
 __all__ = [
     "Product",
@@ -26,6 +27,7 @@ __all__ = [
     "AnalyticalReport",
     "ForecastResult",
     "AggregatedMetrics",
+    "QueryHistory",
     "GUID",
     "user_roles",
     "role_permissions"

@@ -219,8 +219,8 @@ class LLMReasoningEngine:
                 AgentType.SENTIMENT,
                 AgentType.DEMAND_FORECAST
             ],
-            # UNKNOWN: run all agents so we don't silently return wrong results
-            QueryIntent.UNKNOWN: [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST],
+            # UNKNOWN: use the general agent — it queries the DB directly
+            QueryIntent.UNKNOWN: [AgentType.GENERAL],
         }
         
         agents = intent_agent_map.get(intent, [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST])
@@ -498,7 +498,21 @@ Respond in JSON format:
         query_lower = query.lower()
         
         # Keyword-based intent detection — order matters, most specific first
-        if any(word in query_lower for word in ["price", "pricing", "cost", "competitor", "gap", "cheaper", "expensive"]):
+        if any(word in query_lower for word in ["complaint", "complain", "negative review", "bad review",
+                                                  "worst review", "unhappy", "dissatisfied"]):
+            return QueryIntent.UNKNOWN, {}  # → general agent handles complaints
+        elif any(word in query_lower for word in ["profit", "margin", "gross profit", "net profit"]):
+            return QueryIntent.UNKNOWN, {}  # → general agent handles profit
+        elif any(word in query_lower for word in ["business health", "business overview", "how is my business",
+                                                    "overall performance", "business summary", "how am i doing"]):
+            return QueryIntent.UNKNOWN, {}  # → general agent handles business health
+        elif any(word in query_lower for word in ["trend", "over time", "monthly", "month by month",
+                                                    "revenue history", "sales history", "growth"]):
+            return QueryIntent.UNKNOWN, {}  # → general agent handles trends
+        elif any(word in query_lower for word in ["why", "not performing", "what is wrong", "issue with",
+                                                    "problem with", "underperform"]):
+            return QueryIntent.UNKNOWN, {}  # → general agent handles diagnostics
+        elif any(word in query_lower for word in ["price", "pricing", "cost", "competitor", "gap", "cheaper", "expensive"]):
             return QueryIntent.PRICING_ANALYSIS, {}
         elif any(word in query_lower for word in ["revenue", "sales", "category", "earning", "income", "turnover"]):
             return QueryIntent.SALES_ANALYSIS, {}
@@ -511,7 +525,7 @@ Respond in JSON format:
         elif any(word in query_lower for word in ["comprehensive", "full", "complete", "all", "everything", "analysis"]):
             return QueryIntent.MULTI_AGENT, {}
         else:
-            # Truly unknown — run all agents
+            # Truly unknown — use general agent
             return QueryIntent.UNKNOWN, {}
     
     def _extract_product_ids(self, parameters: Dict[str, Any]) -> List[UUID]:

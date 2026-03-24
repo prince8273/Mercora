@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTokenRefresh } from '../hooks/useTokenRefresh'
 import AppShell from '../components/layouts/AppShell'
 import AuthLayout from '../components/layouts/AuthLayout'
 import PageErrorBoundary from '../components/feedback/ErrorBoundary/PageErrorBoundary'
@@ -22,6 +23,9 @@ import Simple11xDemo from '../pages/Simple11xDemo'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth()
+
+  // Silently refresh the token every 20 min while user is on the dashboard
+  useTokenRefresh(isAuthenticated)
 
   if (isLoading) {
     return <div className="loading-screen">Loading...</div>

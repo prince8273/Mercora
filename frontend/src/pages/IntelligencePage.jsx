@@ -64,17 +64,30 @@ export default function IntelligencePage() {
           const details = insight.supporting_evidence?.map(evidence => {
             try {
               const data = JSON.parse(evidence.transformation_applied || '{}');
+              // analysis_type is embedded in transformation_applied for general agent rows
+              const analysisType = data.analysis_type || evidence.data_lineage_path?.[1] || null;
+              // Build metrics from explicit metrics array (sales/sentiment) or pricing fields
+              const metrics = data.metrics?.length > 0
+                ? data.metrics
+                : [
+                    data.current_price && { label: 'Current', value: `₹${data.current_price}` },
+                    data.competitor_price && { label: 'Competitor', value: `₹${data.competitor_price}` },
+                    data.gap_percentage && { label: 'Gap', value: `${data.gap_percentage}%` },
+                    data.average_sentiment != null && { label: 'Sentiment', value: `${(data.average_sentiment * 100).toFixed(0)}%` },
+                    data.review_count && { label: 'Reviews', value: String(data.review_count) },
+                  ].filter(Boolean);
               return {
                 sku: data.sku || 'N/A',
-                name: data.name || 'Unknown Product',
+                name: data.name || null,
+                analysisType,
                 description: data.description,
                 badge: data.badge,
                 badgeVariant: data.badge_variant,
-                metrics: [
-                  data.current_price && { label: 'Current', value: `₹${data.current_price}` },
-                  data.competitor_price && { label: 'Competitor', value: `₹${data.competitor_price}` },
-                  data.gap_percentage && { label: 'Gap', value: `${data.gap_percentage}%` }
-                ].filter(Boolean)
+                complaints: data.complaints ?? null,
+                complaintRate: data.complaint_rate ?? null,
+                issues: data.issues ?? null,
+                lowReviews: data.low_reviews ?? [],
+                metrics
               };
             } catch (e) {
               return null;

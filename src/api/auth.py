@@ -22,7 +22,7 @@ from src.crud.tenant import (
     create_tenant,
     get_tenant_by_slug
 )
-from src.auth.security import create_access_token
+from src.auth.security import create_access_token, decode_access_token
 from src.auth.dependencies import get_current_active_user
 from src.models.user import User
 from src.config import settings
@@ -150,8 +150,35 @@ async def get_current_user_info(
 
 
 @router.post(
+    "/refresh",
+    response_model=Token,
+    summary="Refresh access token (sliding window)"
+)
+async def refresh_token(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Re-issue a fresh token for the currently authenticated user.
+    Call this while the existing token is still valid to keep the session alive.
+    No separate refresh token needed — just send the current Bearer token.
+    """
+    role = "superuser" if current_user.is_superuser else "admin"
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(
+        user_id=current_user.id,
+        tenant_id=current_user.tenant_id,
+        role=role,
+        expires_delta=access_token_expires
+    )
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        expires_in=settings.access_token_expire_minutes * 60
+    )
+
+
+@router.post(
     "/tenants",
-    response_model=TenantResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new tenant (superuser only)"
 )

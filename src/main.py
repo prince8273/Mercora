@@ -20,7 +20,6 @@ from src.api.auth import router as auth_router
 from src.api.forecast import router as forecast_router
 from src.api.dashboard import router as dashboard_router
 from src.api.analytics import router as analytics_router
-from src.api.history import router as history_router
 from src.api.ingestion import router as ingestion_router
 from src.api.lineage import router as lineage_router
 from src.api.models import router as models_router
@@ -187,7 +186,6 @@ app.include_router(sentiment_router, prefix=settings.api_v1_prefix)
 app.include_router(forecast_router, prefix=settings.api_v1_prefix)
 app.include_router(dashboard_router, prefix=settings.api_v1_prefix)
 app.include_router(analytics_router, prefix=settings.api_v1_prefix)
-app.include_router(history_router, prefix=settings.api_v1_prefix)
 app.include_router(ingestion_router, prefix=settings.api_v1_prefix)
 app.include_router(lineage_router, prefix=settings.api_v1_prefix)
 app.include_router(models_router, prefix=settings.api_v1_prefix)

@@ -37,6 +37,7 @@ class User(Base):
     tenant = relationship("Tenant", back_populates="users")
     preferences = relationship("UserPreferences", back_populates="user", uselist=False)
     roles = relationship("Role", secondary="user_roles", back_populates="users")
+    query_history = relationship("QueryHistory", back_populates="user")
     
     # Indexes
     __table_args__ = (

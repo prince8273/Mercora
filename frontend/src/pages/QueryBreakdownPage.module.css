@@ -196,3 +196,102 @@
   .page { padding: var(--spacing-md); }
   .metricsGrid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Expandable rows */
+.clickableRow {
+  cursor: pointer;
+}
+.clickableRow:hover td {
+  background: var(--bg-tertiary);
+}
+.expandCell {
+  text-align: center;
+  width: 36px;
+}
+.expandChevron {
+  display: inline-block;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+.chevronOpen {
+  transform: rotate(180deg);
+}
+.expandedRow td {
+  padding: 0;
+  background: var(--bg-secondary);
+}
+.expandedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px dashed var(--border-color);
+}
+.expandedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.expandedLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+  min-width: 180px;
+}
+.expandedBadgeDanger {
+  background: #fee2e2;
+  color: #dc2626;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+}
+.complaintRateNote {
+  font-weight: 400;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+.expandedIssues {
+  color: var(--text-primary);
+  font-style: italic;
+}
+
+/* Low-rating reviews list inside expanded row */
+.reviewsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  width: 100%;
+}
+.reviewsHeader {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.reviewItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+}
+.reviewStars {
+  font-size: 0.85rem;
+  color: #ef4444;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+.reviewText {
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}

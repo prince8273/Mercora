@@ -213,6 +213,89 @@ class QueryRouter:
                 execution_mode=ExecutionMode.QUICK,
                 priority=20
             ),
+
+            # Category performance / "why not selling" queries - routed to GENERAL
+            # GENERAL agent's performance_diagnostic handles this with full category scoping
+            InternalQueryPattern(
+                name="category_performance",
+                patterns=[
+                    r"why.*not.*selling",
+                    r"why.*selling.*bad",
+                    r"why.*selling.*poor",
+                    r"why.*low.*sales",
+                    r"why.*poor.*sales",
+                    r"not.*performing",
+                    r"underperform",
+                    r"poor.*performance",
+                    r"low.*performance",
+                    r"category.*not.*selling",
+                    r"category.*performance",
+                    r"improve.*category",
+                    r"boost.*category",
+                    r"category.*issue",
+                    r"category.*problem",
+                    r"why.*is.*not",
+                    r"why.*are.*not",
+                    r"why.*not.*good",
+                    r"why.*not.*well",
+                ],
+                agents=[AgentType.GENERAL],
+                execution_mode=ExecutionMode.QUICK,
+                priority=25
+            ),
+
+            # General DB queries — anything not covered above
+            InternalQueryPattern(
+                name="general_query",
+                patterns=[
+                    r"total.*revenue",
+                    r"revenue.*generated",
+                    r"revenue.*till",
+                    r"revenue.*so far",
+                    r"all.*time.*revenue",
+                    r"how much.*revenue",
+                    r"profit.*margin",
+                    r"gross.*profit",
+                    r"net.*profit",
+                    r"how.*profitable",
+                    r"complaint",
+                    r"most.*complain",
+                    r"negative.*review",
+                    r"bad.*review",
+                    r"worst.*review",
+                    r"business.*health",
+                    r"business.*overview",
+                    r"how.*business.*doing",
+                    r"overall.*performance",
+                    r"business.*summary",
+                    r"revenue.*trend",
+                    r"sales.*trend",
+                    r"month.*by.*month",
+                    r"revenue.*history",
+                    r"why.*not.*performing",
+                    r"why.*performing.*bad",
+                    r"what.*wrong",
+                    r"issue.*with",
+                    r"problem.*with",
+                    r"inventory.*level",
+                    r"out.*of.*stock",
+                    r"low.*stock",
+                    r"how.*many.*product",
+                    r"list.*product",
+                    r"show.*product",
+                    r"average.*price",
+                    r"price.*range",
+                    r"marketplace.*performance",
+                    r"which.*marketplace",
+                    r"best.*rated",
+                    r"worst.*rated",
+                    r"lowest.*rating",
+                    r"highest.*rating",
+                ],
+                agents=[AgentType.GENERAL],
+                execution_mode=ExecutionMode.QUICK,
+                priority=15
+            ),
         ]
         
         # Sort by priority (higher priority first)
@@ -319,9 +402,9 @@ class QueryRouter:
             seen = set()
             required_agents = [x for x in required_agents if not (x in seen or seen.add(x))]
         else:
-            # Fallback: use all agents for unknown queries
-            required_agents = [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST]
-            execution_mode = ExecutionMode.DEEP
+            # Fallback: use the general agent — it can answer anything from the DB
+            required_agents = [AgentType.GENERAL]
+            execution_mode = ExecutionMode.QUICK
         
         # Step 4: Generate cache key
         cache_key = self._generate_cache_key(query, required_agents)

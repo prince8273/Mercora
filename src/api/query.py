@@ -246,13 +246,16 @@ async def execute_query(
         intent, parameters = llm_engine.understand_query(request.query_text)
         
         # Use router's agents if it found a deterministic pattern match,
-        # otherwise fall back to LLM agent selection
+        # otherwise fall back to LLM agent selection.
+        # The router falls back to all-3-agents when NO pattern matched (deep mode).
+        from src.schemas.orchestration import AgentType as AgentTypeEnum
         router_agents = routing_decision.required_agents
-        router_matched = bool(router_agents) and not (
-            # Router falls back to all-agents when no pattern matched
-            set(a.value for a in router_agents) == {'pricing', 'sentiment', 'demand_forecast'}
-            and routing_decision.execution_mode.value == 'deep'
+        fallback_set = {AgentTypeEnum.PRICING, AgentTypeEnum.SENTIMENT, AgentTypeEnum.DEMAND_FORECAST}
+        is_router_fallback = (
+            set(router_agents) == fallback_set
+            and routing_decision.execution_mode == ExecutionMode.DEEP
         )
+        router_matched = bool(router_agents) and not is_router_fallback
 
         if router_matched:
             required_agents = router_agents
@@ -316,7 +319,8 @@ async def execute_query(
             'query_text': request.query_text,
             'analysis_type': request.analysis_type,
             'db': db,
-            'tenant_id': tenant_id
+            'tenant_id': tenant_id,
+            'category_filter': _extract_category_from_query(request.query_text),
         }
         
         # Execute agents
@@ -357,7 +361,25 @@ async def execute_query(
         if token_usage['total_tokens'] > 0:
             logger.info(f"[ORCHESTRATION] Token usage: {token_usage['total_tokens']} tokens, "
                         f"${token_usage['estimated_cost_usd']} cost")
-        
+
+        # Persist query to history
+        try:
+            from src.models.query_history import QueryHistory
+            history_entry = QueryHistory(
+                tenant_id=tenant_id,
+                user_id=current_user.id,
+                query_text=request.query_text,
+                execution_mode=execution_plan.execution_mode.value,
+                agents_executed=[t.agent_type.value for t in execution_plan.tasks],
+                overall_confidence=structured_report.overall_confidence,
+                execution_time_seconds=execution_plan.estimated_duration.total_seconds(),
+                status="success",
+            )
+            db.add(history_entry)
+            await db.flush()
+        except Exception as hist_err:
+            logger.warning(f"[ORCHESTRATION] Failed to save query history: {hist_err}")
+
         return structured_report
     
     except Exception as e:
@@ -738,6 +760,25 @@ def _calculate_confidence(pricing_analysis, sentiment_analysis) -> float:
     return round(overall_confidence, 2)
 
 
+def _extract_category_from_query(query_text: str) -> str | None:
+    """Extract a product category name mentioned in the query."""
+    q = query_text.lower()
+    KNOWN_CATEGORIES = [
+        'electronics', 'home & kitchen', 'sports & fitness', 'beauty & personal care',
+        'clothing', 'books', 'toys', 'automotive', 'garden', 'health',
+        'kitchen', 'sports', 'beauty', 'fashion', 'apparel',
+    ]
+    CATEGORY_ALIASES = {
+        'kitchen': 'home & kitchen', 'sports': 'sports & fitness',
+        'beauty': 'beauty & personal care', 'fashion': 'clothing',
+        'apparel': 'clothing', 'health': 'beauty & personal care',
+    }
+    found = next((c for c in KNOWN_CATEGORIES if c in q), None)
+    if found:
+        return CATEGORY_ALIASES.get(found, found)
+    return None
+
+
 async def _get_relevant_products_for_query(
     db: AsyncSession,
     tenant_id: UUID,
@@ -761,7 +802,42 @@ async def _get_relevant_products_for_query(
     from src.models.review import Review
     
     query_lower = query_text.lower()
-    
+
+    # Known product categories — detect if the query mentions one
+    KNOWN_CATEGORIES = [
+        'electronics', 'home & kitchen', 'sports & fitness', 'beauty & personal care',
+        'clothing', 'books', 'toys', 'automotive', 'garden', 'health',
+        'kitchen', 'sports', 'beauty', 'fashion', 'apparel',
+    ]
+    mentioned_category = next(
+        (cat for cat in KNOWN_CATEGORIES if cat in query_lower),
+        None
+    )
+
+    # If a specific category is mentioned, filter products to that category
+    if mentioned_category:
+        # Normalize: "kitchen" should match "Home & Kitchen", etc.
+        category_map = {
+            'kitchen': 'home & kitchen',
+            'sports': 'sports & fitness',
+            'beauty': 'beauty & personal care',
+            'fashion': 'clothing',
+            'apparel': 'clothing',
+            'health': 'beauty & personal care',
+        }
+        resolved_category = category_map.get(mentioned_category, mentioned_category)
+        result = await db.execute(
+            select(Product)
+            .where(
+                Product.tenant_id == tenant_id,
+                func.lower(Product.category).contains(resolved_category.lower())
+            )
+            .limit(20)
+        )
+        products = result.scalars().all()
+        if products:
+            return [p.id for p in products]
+
     # Check for "top selling" or "most selling" or "best selling" queries
     if any(keyword in query_lower for keyword in ['top selling', 'most selling', 'best selling', 'highest sales', 'top products']):
         # Get products with most sales (TENANT-FILTERED)

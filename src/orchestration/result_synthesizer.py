@@ -183,6 +183,8 @@ class ResultSynthesizer:
                 insights.extend(self._extract_forecast_insights(result, agent_name))
             elif agent_type.value == 'sales':
                 insights.extend(self._extract_sales_insights(result, agent_name))
+            elif agent_type.value == 'general':
+                insights.extend(self._extract_general_insights(result, agent_name))
         
         logger.info(f"Total insights extracted: {len(insights)}")
         return insights
@@ -451,6 +453,176 @@ class ResultSynthesizer:
         
         return insights
     
+    def _extract_general_insights(self, result: Dict[str, Any], agent_name: str) -> List[Insight]:
+        """Extract insights from the general agent results"""
+        insights = []
+        data = result.get("data") if result.get("data") is not None else result
+        if isinstance(data, dict) and 'data' in data:
+            data = data['data']
+
+        if not isinstance(data, dict):
+            return insights
+
+        analysis_type = data.get('analysis_type', 'general')
+        agent_confidence = result.get("confidence", 0.9)
+        message = data.get('message', '')
+        items = data.get('items', [])
+        columns = data.get('columns', [])
+
+        # Build supporting evidence from items
+        evidence = []
+        for item in items[:15]:
+            # For time-series data (revenue_trend / sentiment_trend), use month as the identifier
+            if analysis_type in ('revenue_trend', 'sentiment_trend'):
+                sku = item.get('month', 'N/A')
+                name = ''
+            else:
+                sku = item.get('sku') or item.get('category') or item.get('marketplace') or 'N/A'
+                name = item.get('name') or item.get('category') or item.get('marketplace') or ''
+
+            # Build metrics from whatever numeric fields exist in the item
+            metrics = []
+
+            # For performance diagnostics, show diagnostic-relevant columns only
+            # (revenue/price are misleading for a "why not performing" query)
+            if analysis_type == 'performance_diagnostic':
+                diagnostic_keys = [
+                    ('avg_rating', '{:.1f}★'),
+                    ('complaint_rate', '{:.1f}%'),
+                    ('complaints', '{}'),
+                    ('units_sold', '{:,}'),
+                    ('inventory', '{:,}'),
+                ]
+                label_map = {
+                    'avg_rating': 'Avg Rating',
+                    'complaint_rate': 'Complaint Rate',
+                    'complaints': 'Complaints',
+                    'units_sold': 'Units Sold',
+                    'inventory': 'Stock',
+                }
+                for key, fmt in diagnostic_keys:
+                    val = item.get(key)
+                    if val is not None:
+                        try:
+                            formatted = fmt.format(val)
+                        except Exception:
+                            formatted = str(val)
+                        metrics.append({'label': label_map[key], 'value': formatted})
+            else:
+                numeric_keys = [
+                    ('revenue', '₹{:,.2f}'), ('total_revenue', '₹{:,.2f}'),
+                    ('price', '₹{:,.2f}'), ('avg_price', '₹{:,.2f}'),
+                    ('units_sold', '{:,}'), ('units', '{:,}'), ('total_units', '{:,}'),
+                    ('inventory', '{:,}'), ('inventory_level', '{:,}'), ('stock', '{:,}'),
+                    ('review_count', '{:,}'), ('avg_rating', '{:.2f}★'),
+                    ('positive', '{:,}'), ('negative', '{:,}'), ('positive_pct', '{:.1f}%'),
+                    ('orders', '{:,}'), ('order_count', '{:,}'),
+                    ('count', '{:,}'), ('product_count', '{:,}'), ('products', '{:,}'),
+                ]
+                seen_labels = set()
+                for key, fmt in numeric_keys:
+                    val = item.get(key)
+                    if val is not None and key not in seen_labels:
+                        seen_labels.add(key)
+                        label = key.replace('_', ' ').title()
+                        try:
+                            formatted = fmt.format(val)
+                        except Exception:
+                            formatted = str(val)
+                        metrics.append({'label': label, 'value': formatted})
+
+            # Use column names as labels if provided
+            if columns and not metrics:
+                for col in columns:
+                    col_key = col.lower().replace(' ', '_')
+                    val = item.get(col_key) or item.get(col.lower())
+                    if val is not None:
+                        metrics.append({'label': col, 'value': str(val)})
+
+            # For performance_diagnostic, include complaints + issues + review texts
+            extra = {}
+            if analysis_type == 'performance_diagnostic':
+                complaints_val = item.get('complaints', 0)
+                complaint_rate_val = item.get('complaint_rate', 0)
+                issues_val = item.get('issues', '')
+                extra['complaints'] = int(complaints_val) if complaints_val else 0
+                extra['complaint_rate'] = float(complaint_rate_val) if complaint_rate_val else 0.0
+                extra['issues'] = issues_val or 'none detected'
+                extra['low_reviews'] = item.get('low_reviews', [])
+                # Use complaint_rate threshold (>15%) or explicit issues to flag danger
+                has_real_issue = (
+                    extra['complaint_rate'] > 15
+                    or (extra['issues'] not in ('none detected', 'no issues detected', ''))
+                )
+                badge_variant = 'danger' if has_real_issue else 'success'
+            else:
+                badge_variant = 'success'
+
+            ev = SupportingEvidence(
+                evidence_id=str(uuid4()),
+                insight_id="",
+                source_data_type="database",
+                source_record_ids=[],
+                data_lineage_path=["general_agent", analysis_type],
+                confidence=agent_confidence,
+                transformation_applied=json.dumps({
+                    "sku": sku,
+                    "name": name,
+                    "analysis_type": analysis_type,
+                    "metrics": metrics,
+                    "badge": metrics[0]['value'] if metrics else None,
+                    "badge_variant": badge_variant,
+                    **extra,
+                })
+            )
+            evidence.append(ev)
+
+        title_map = {
+            'inventory': 'Inventory Overview',
+            'product_list': 'Product Catalogue',
+            'product_count': 'Product Count',
+            'price_summary': 'Price Summary by Category',
+            'price_list': 'Product Pricing',
+            'reviews': 'Product Ratings & Reviews',
+            'marketplace': 'Marketplace Performance',
+            'revenue_by_category': 'Revenue by Category',
+            'revenue_trend': 'Revenue Trend Over Time',
+            'sentiment_trend': 'Customer Sentiment Trends',
+            'category_deep_dive': f'Category Deep Dive: {data.get("category", "").title()}',
+            'product_search': 'Matching Products',
+            'data_summary': 'Data Overview',
+            'top_products': 'Top Products',
+        }
+        title = title_map.get(analysis_type, 'Analysis Result')
+
+        insight = Insight(
+            insight_id=str(uuid4()),
+            title=title,
+            description=message,
+            category="general",
+            agent_source=agent_name,
+            confidence=agent_confidence,
+            supporting_evidence=evidence
+        )
+        for ev in insight.supporting_evidence:
+            ev.insight_id = insight.insight_id
+        insights.append(insight)
+
+        # Extra callout for zero-sales products in category deep dives
+        zero_count = data.get('zero_sales_count', 0)
+        if zero_count:
+            insights.append(Insight(
+                insight_id=str(uuid4()),
+                title="Products With Zero Sales",
+                description=f"{zero_count} products in this category have never sold. Consider reviewing pricing or visibility.",
+                category="general",
+                agent_source=agent_name,
+                confidence=agent_confidence,
+                supporting_evidence=[]
+            ))
+
+        return insights
+
     def _extract_sales_insights(self, result: Dict[str, Any], agent_name: str) -> List[Insight]:
         """Extract insights from sales agent results"""
         insights = []
@@ -474,7 +646,7 @@ class ResultSynthesizer:
                         confidence=agent_confidence,
                         transformation_applied=json.dumps({
                             "sku": cat['category'],
-                            "name": cat['category'],
+                            "name": "",
                             "badge": f"₹{cat['total_revenue']:,.0f}",
                             "badge_variant": "success",
                             "metrics": [
@@ -500,6 +672,7 @@ class ResultSynthesizer:
 
         elif analysis_type == 'top_products':
             products = data.get('products', [])
+            category_filter = data.get('category_filter')
             if products:
                 evidence = [
                     SupportingEvidence(
@@ -523,9 +696,11 @@ class ResultSynthesizer:
                     )
                     for p in products[:10]
                 ]
+                title = (f"Top Products in {category_filter.title()}"
+                         if category_filter else "Top Products by Revenue")
                 insight = Insight(
                     insight_id=str(uuid4()),
-                    title="Top Products by Revenue",
+                    title=title,
                     description=data.get('message', f"Top {len(products)} products by revenue"),
                     category="sales",
                     agent_source=agent_name,
@@ -543,49 +718,67 @@ class ResultSynthesizer:
         metrics = []
         
         for agent_type, result in agent_results.items():
+            # Unwrap data — agents wrap their payload in a 'data' key
+            data = result.get("data") if result.get("data") is not None else result
+            if isinstance(data, dict) and 'data' in data:
+                data = data['data']
+
             if agent_type == AgentType.PRICING:
-                # Average price gap
-                price_gaps = result.get("price_gaps", [])
+                price_gaps = data.get("price_gaps", []) if isinstance(data, dict) else []
                 if price_gaps:
                     avg_gap = sum(g.get("gap_percentage", 0) for g in price_gaps) / len(price_gaps)
-                    metric = MetricWithTrend(
+                    metrics.append(MetricWithTrend(
                         name="Average Price Gap",
-                        value=round(avg_gap, 1),  # Numeric value
+                        value=round(avg_gap, 1),
                         unit="percentage",
                         trend=TrendDirection.STABLE,
                         confidence=result.get("confidence", 0.85)
-                    )
-                    metrics.append(metric)
+                    ))
             
             elif agent_type == AgentType.SENTIMENT:
-                # Sentiment score
-                sentiment_score = result.get("aggregate_sentiment_score")
+                sentiment_score = data.get("aggregate_sentiment_score") if isinstance(data, dict) else None
                 if sentiment_score is not None:
-                    metric = MetricWithTrend(
+                    metrics.append(MetricWithTrend(
                         name="Customer Sentiment Score",
-                        value=round(sentiment_score, 2),  # Numeric value
+                        value=round(sentiment_score, 2),
                         unit="score",
                         trend=TrendDirection.STABLE,
                         confidence=result.get("confidence", 0.8)
-                    )
-                    metrics.append(metric)
+                    ))
             
             elif agent_type == AgentType.DEMAND_FORECAST:
-                # Forecasted demand
-                forecast_points = result.get("forecast_points", [])
+                forecast_points = data.get("forecast_points", []) if isinstance(data, dict) else []
                 if forecast_points:
                     avg_forecast = sum(p.get("predicted_quantity", 0) for p in forecast_points) / len(forecast_points)
-                    trend_str = result.get("trend", "stable")
+                    trend_str = data.get("trend", "stable") if isinstance(data, dict) else "stable"
                     trend = TrendDirection.UP if trend_str == "increasing" else TrendDirection.DOWN if trend_str == "decreasing" else TrendDirection.STABLE
-                    
-                    metric = MetricWithTrend(
+                    metrics.append(MetricWithTrend(
                         name="Forecasted Demand",
-                        value=round(avg_forecast, 0),  # Numeric value
+                        value=round(avg_forecast, 0),
                         unit="units",
                         trend=trend,
                         confidence=result.get("final_confidence", 0.8)
-                    )
-                    metrics.append(metric)
+                    ))
+
+            elif agent_type.value in ('sales', 'general'):
+                total_revenue = data.get("total_revenue") if isinstance(data, dict) else None
+                if total_revenue:
+                    metrics.append(MetricWithTrend(
+                        name="Total Revenue",
+                        value=round(float(total_revenue), 2),
+                        unit="₹",
+                        trend=TrendDirection.STABLE,
+                        confidence=result.get("confidence", 0.9)
+                    ))
+                total_units = data.get("total_units") if isinstance(data, dict) else None
+                if total_units:
+                    metrics.append(MetricWithTrend(
+                        name="Total Units Sold",
+                        value=int(total_units),
+                        unit="units",
+                        trend=TrendDirection.STABLE,
+                        confidence=result.get("confidence", 0.9)
+                    ))
         
         return metrics
     
@@ -776,6 +969,44 @@ class ResultSynthesizer:
                 )
                 actions.append(action)
         
+        # Actions from general agent
+        for agent_key in agent_results:
+            if agent_key.value == 'general':
+                result = agent_results[agent_key]
+                data = result.get("data") if result.get("data") is not None else result
+                if isinstance(data, dict) and 'data' in data:
+                    data = data['data']
+                analysis_type = data.get('analysis_type', '') if isinstance(data, dict) else ''
+                # Surface zero-sales as a high-priority action
+                zero_count = data.get('zero_sales_count', 0) if isinstance(data, dict) else 0
+                if zero_count:
+                    category = data.get('category', 'this category')
+                    actions.append(ActionItem(
+                        action_id=str(uuid4()),
+                        title=f"Investigate {zero_count} zero-sales products in {category}",
+                        description="These products have no recorded sales. Review pricing, listing quality, and visibility.",
+                        priority="high",
+                        impact="high",
+                        urgency="high",
+                        source_agent="general",
+                        confidence=result.get("confidence", 0.9)
+                    ))
+                # Low inventory action
+                items = data.get('items', []) if isinstance(data, dict) else []
+                if analysis_type == 'inventory':
+                    low_stock = [i for i in items if (i.get('inventory') or 0) < 20]
+                    if low_stock:
+                        actions.append(ActionItem(
+                            action_id=str(uuid4()),
+                            title=f"Restock {len(low_stock)} critically low inventory products",
+                            description=f"Products with fewer than 20 units: {', '.join(i['sku'] for i in low_stock[:3])}{'...' if len(low_stock) > 3 else ''}",
+                            priority="high",
+                            impact="high",
+                            urgency="high",
+                            source_agent="general",
+                            confidence=result.get("confidence", 0.9)
+                        ))
+
         return actions
     
     def _prioritize_action_items(self, action_items: List[ActionItem]) -> List[ActionItem]:
