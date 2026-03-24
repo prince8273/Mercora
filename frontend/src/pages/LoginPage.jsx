@@ -13,6 +13,9 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
+  // Check if form is valid
+  const isFormValid = email.trim() !== '' && password.trim() !== ''
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -21,7 +24,8 @@ export default function LoginPage() {
     const result = await login(email, password)
 
     if (result.success) {
-      navigate('/overview')
+      // Full page refresh after successful login to clear all state
+      window.location.href = '/overview'
     } else {
       setError(result.error)
     }
@@ -55,7 +59,7 @@ export default function LoginPage() {
           required
         />
 
-        <Button type="submit" fullWidth isLoading={isLoading}>
+        <Button type="submit" fullWidth isLoading={isLoading} disabled={!isFormValid || isLoading}>
           Sign In
         </Button>
       </form>

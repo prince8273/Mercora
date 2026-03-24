@@ -1,20 +1,30 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import './AuthLayout.css'
 import EcommerceLogo from '@/components/ui/EcommerceLogo'
 
 export default function AuthLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY
-      setIsScrolled(scrollPosition > 100)
+      setIsScrolled(scrollPosition > 50)
     }
+
+    // Check initial scroll position
+    handleScroll()
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Scroll to top on route change for better UX
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
 
   return (
     <div className="auth-layout">
@@ -23,9 +33,9 @@ export default function AuthLayout({ children }) {
         <div className="auth-header-content">
           <EcommerceLogo />
           <nav className="auth-header-nav">
-            <a href="#" className="auth-header-link">Dhana</a>
-            <a href="#" className="auth-header-link">Vivek</a>
-            <a href="#" className="auth-header-link">Agrim</a>
+            <Link to="/" className="auth-header-link">Dhana</Link>
+            <Link to="/" className="auth-header-link">Vivek</Link>
+            <Link to="/" className="auth-header-link">Agrim</Link>
             <div className="auth-header-dropdown">
               <button className="auth-header-link auth-header-dropdown-button">
                 Company
@@ -35,13 +45,13 @@ export default function AuthLayout({ children }) {
               </button>
               <div className="auth-header-dropdown-menu">
                 <div className="auth-header-dropdown-content">
-                  <a href="/about-us" className="auth-header-dropdown-item">
+                  <Link to="/about-us" className="auth-header-dropdown-item">
                     About Us
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
-            <a href="#" className="auth-header-link">Blog</a>
+            <Link to="/" className="auth-header-link">Blog</Link>
           </nav>
           <div className="auth-header-actions">
             <Link to="/signup" className="auth-header-button">Get started</Link>
@@ -56,14 +66,18 @@ export default function AuthLayout({ children }) {
           : 'auth-header-hidden'
       }`}>
         <div className="auth-header-content">
-          <div className="auth-header-logo">
+          <div 
+            className="auth-header-logo" 
+            onClick={() => navigate('/')}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="auth-header-logo-icon auth-header-logo-icon-dark">E</div>
             <span className="auth-header-logo-text auth-header-logo-text-dark">Ecommerce Intelligence</span>
           </div>
           <nav className="auth-header-nav">
-            <a href="#" className="auth-header-link auth-header-link-dark">Dhana</a>
-            <a href="#" className="auth-header-link auth-header-link-dark">Vivek</a>
-            <a href="#" className="auth-header-link auth-header-link-dark">Agrim</a>
+            <Link to="/" className="auth-header-link auth-header-link-dark">Dhana</Link>
+            <Link to="/" className="auth-header-link auth-header-link-dark">Vivek</Link>
+            <Link to="/" className="auth-header-link auth-header-link-dark">Agrim</Link>
             <div className="auth-header-dropdown">
               <button className="auth-header-link auth-header-link-dark auth-header-dropdown-button">
                 Company
@@ -73,13 +87,13 @@ export default function AuthLayout({ children }) {
               </button>
               <div className="auth-header-dropdown-menu">
                 <div className="auth-header-dropdown-content">
-                  <a href="/about-us" className="auth-header-dropdown-item">
+                  <Link to="/about-us" className="auth-header-dropdown-item">
                     About Us
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
-            <a href="#" className="auth-header-link auth-header-link-dark">Blog</a>
+            <Link to="/" className="auth-header-link auth-header-link-dark">Blog</Link>
           </nav>
           <div className="auth-header-actions">
             <Link to="/signup" className="auth-header-button auth-header-button-dark">Get started</Link>

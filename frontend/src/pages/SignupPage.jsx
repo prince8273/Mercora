@@ -17,6 +17,13 @@ export default function SignupPage() {
   const { signup } = useAuth()
   const navigate = useNavigate()
 
+  // Check if form is valid
+  const isFormValid = 
+    formData.fullName.trim() !== '' &&
+    formData.email.trim() !== '' &&
+    formData.password.trim() !== '' &&
+    formData.confirmPassword.trim() !== ''
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -42,7 +49,8 @@ export default function SignupPage() {
     })
 
     if (result.success) {
-      navigate('/overview')
+      // Full page refresh after successful signup to clear all state
+      window.location.href = '/overview'
     } else {
       setError(result.error)
     }
@@ -64,7 +72,7 @@ export default function SignupPage() {
           label="Full Name"
           value={formData.fullName}
           onChange={handleChange}
-          placeholder="John Doe"
+          placeholder="Your Name"
           required
         />
 
@@ -98,7 +106,7 @@ export default function SignupPage() {
           required
         />
 
-        <Button type="submit" fullWidth isLoading={isLoading}>
+        <Button type="submit" fullWidth isLoading={isLoading} disabled={!isFormValid || isLoading}>
           Create Account
         </Button>
       </form>
