@@ -75,7 +75,7 @@ export default function SideNav() {
                   }
                   title={isCollapsed ? item.label : ''}
                 >
-                  <Icon size={20} />
+                  <Icon size={22} />
                   {!isCollapsed && <span>{item.label}</span>}
                 </NavLink>
               )
