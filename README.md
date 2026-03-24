@@ -1,249 +1,154 @@
-# E-commerce Intelligence Platform
+# Mercora — E-commerce Intelligence Platform
 
-AI-Powered Decision Intelligence SaaS Platform for E-commerce
+> AI-powered decision intelligence for e-commerce teams. Meet **Dhana**, **Vivek**, and **Agrim** — your digital workers for pricing, sentiment, and demand forecasting.
 
 ---
 
 ## 🚀 Quick Start
 
-### Windows:
-**Double-click:** `START.bat`
+**Prerequisites:** Python 3.11+, Node.js 18+, PostgreSQL, Redis
 
-OR
+### 1. Clone & Install
 
-```powershell
-.\start-all.ps1
+```bash
+git clone https://github.com/prince8273/Mercora.git
+cd Mercora
 ```
 
-### Linux/Mac:
 ```bash
-chmod +x start-all.sh
-./start-all.sh
-```
-
-**That's it!** Both frontend and backend will start automatically.
-
----
-
-## 📋 What You Get
-
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs
-
----
-
-## 🔐 Test Login
-
-**Email:** test@example.com  
-**Password:** password123
-
-*(Create this user first - see [STARTUP_GUIDE.md](STARTUP_GUIDE.md))*
-
----
-
-## 📚 Documentation
-
-- **[STARTUP_GUIDE.md](STARTUP_GUIDE.md)** - Complete setup and startup guide
-- **[HOW_TO_LOGIN.md](HOW_TO_LOGIN.md)** - Login troubleshooting
-- **[START_SERVERS_README.md](START_SERVERS_README.md)** - Server startup options
-- **[FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md)** - Frontend architecture
-- **[PROJECT_STATUS_SUMMARY.md](PROJECT_STATUS_SUMMARY.md)** - Project status
-
----
-
-## 🏗️ Architecture
-
-### Backend (FastAPI + Python)
-- 23 API routers with 100+ endpoints
-- Multi-agent AI orchestration
-- Real-time WebSocket updates
-- Redis caching
-- PostgreSQL database
-- JWT authentication
-- Multi-tenancy support
-
-### Frontend (React + Vite)
-- Modern React 18 with hooks
-- React Query for server state
-- Real-time updates via WebSocket
-- Responsive design
-- Dark mode support
-- TypeScript-ready
-
----
-
-## 🎯 Features
-
-### Intelligence Query
-- Natural language query processing
-- Multi-agent orchestration
-- Real-time progress tracking
-- Structured insights
-
-### Pricing Analysis
-- Competitor price monitoring
-- AI-powered recommendations
-- Price trend analysis
-- Promotion tracking
-
-### Sentiment Analysis
-- Customer review analysis
-- Theme extraction
-- Feature request identification
-- Complaint categorization
-
-### Demand Forecasting
-- Time series forecasting
-- Seasonality detection
-- Inventory alerts
-- Reorder recommendations
-
-### Dashboard
-- Real-time KPIs
-- Trend visualization
-- Quick insights
-- Alert management
-
----
-
-## 🔧 Tech Stack
-
-### Backend
-- **Framework:** FastAPI
-- **Language:** Python 3.11+
-- **Database:** PostgreSQL
-- **Cache:** Redis
-- **ORM:** SQLAlchemy
-- **Migrations:** Alembic
-- **Auth:** JWT
-- **WebSocket:** Socket.IO
-
-### Frontend
-- **Framework:** React 18
-- **Build Tool:** Vite 5
-- **State:** React Query + Zustand
-- **Routing:** React Router v6
-- **HTTP:** Axios
-- **Charts:** Recharts
-- **Icons:** Lucide React
-- **WebSocket:** Socket.IO Client
-
----
-
-## 📦 Installation
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL (optional, SQLite works too)
-- Redis (optional)
-
-### Setup
-
-1. **Clone repository**
-```bash
-git clone <repository-url>
-cd ecommerce-intelligence
-```
-
-2. **Backend setup**
-```bash
+# Backend
 python -m venv venv
-.\venv\Scripts\Activate.ps1  # Windows
-source venv/bin/activate      # Linux/Mac
+.\venv\Scripts\Activate.ps1   # Windows
 pip install -r requirements.txt
+alembic upgrade head
 ```
 
-3. **Frontend setup**
 ```bash
+# Frontend
 cd frontend
 npm install
-cd ..
 ```
 
-4. **Environment variables**
+### 2. Environment Variables
 
-Create `.env` in root:
+`.env` (root):
 ```env
 DATABASE_URL=postgresql://user:password@localhost/dbname
 REDIS_URL=redis://localhost:6379
 SECRET_KEY=your-secret-key-here
 ```
 
-Create `frontend/.env`:
+`frontend/.env`:
 ```env
 VITE_API_URL=http://localhost:8000
 VITE_WS_URL=http://localhost:8000
 ```
 
-5. **Database migrations**
+### 3. Run
+
 ```bash
-alembic upgrade head
+# Backend
+uvicorn main:app --reload --port 8000
+
+# Frontend (separate terminal)
+cd frontend && npm run dev
 ```
 
-6. **Start servers**
-```bash
-.\start-all.ps1  # Windows
-./start-all.sh   # Linux/Mac
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
+
+---
+
+## 🤖 AI Agents
+
+| Agent | Role |
+|---|---|
+| **Dhana** | Pricing strategist — competitor monitoring, margin optimization |
+| **Vivek** | Sentiment analyst — review analysis, customer insights |
+| **Agrim** | Demand forecaster — inventory planning, seasonality detection |
+
+### How the Agents Work
+
+```
+                        ┌─────────────────────────────┐
+                        │     E-commerce Data Input    │
+                        │  (Products, Reviews, Sales)  │
+                        └──────────────┬──────────────┘
+                                       │
+                        ┌──────────────▼──────────────┐
+                        │     AI Orchestration Layer   │
+                        │     (Multi-Agent Router)     │
+                        └──────┬──────────┬────────────┘
+                               │          │          │
+               ┌───────────────▼─┐  ┌─────▼──────┐  ┌▼──────────────┐
+               │     DHANA       │  │   VIVEK    │  │    AGRIM      │
+               │ Pricing Agent   │  │ Sentiment  │  │   Forecast    │
+               │                 │  │   Agent    │  │    Agent      │
+               │ • Competitor    │  │            │  │               │
+               │   price scan    │  │ • Review   │  │ • Demand      │
+               │ • Margin calc   │  │   analysis │  │   prediction  │
+               │ • Auto reprice  │  │ • Theme    │  │ • Seasonality │
+               │ • Promo detect  │  │   extract  │  │ • Reorder     │
+               └───────┬─────────┘  └─────┬──────┘  └──────┬────────┘
+                       │                  │                  │
+                        └─────────────────┼─────────────────┘
+                                          │
+                        ┌─────────────────▼──────────────┐
+                        │        Dashboard & Insights     │
+                        │   KPIs · Alerts · Trends · AI  │
+                        │         Recommendations         │
+                        └────────────────────────────────┘
+```
+
+### Agent Workflow
+
+```
+User Query
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│  Natural Language Processing                │
+│  "Optimize my pricing for max profit"       │
+└──────────────────────┬──────────────────────┘
+                       │
+                       ▼
+              Route to Agent(s)
+           ┌──────────┴──────────┐
+           │                     │
+    ┌──────▼──────┐       ┌──────▼──────┐
+    │   Dhana     │       │    Agrim    │
+    │  analyzes   │       │  forecasts  │
+    │  competitor │       │  demand to  │
+    │  prices     │       │  set stock  │
+    └──────┬──────┘       └──────┬──────┘
+           │                     │
+           └──────────┬──────────┘
+                      │
+                      ▼
+           ┌──────────────────────┐
+           │  Structured Output   │
+           │  · Recommended price │
+           │  · Confidence score  │
+           │  · Action items      │
+           └──────────────────────┘
 ```
 
 ---
 
-## 🧪 Testing
+## �️ Tech Stack
 
-### Backend Tests
-```bash
-pytest
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
----
-
-## 📊 Project Status
-
-- **Backend:** ✅ 100% Complete
-- **Frontend UI:** ✅ 100% Complete
-- **Integration:** 🟡 35% Complete
-- **Overall:** 🟡 66% Complete
-
-See [PROJECT_STATUS_SUMMARY.md](PROJECT_STATUS_SUMMARY.md) for details.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+| Layer | Stack |
+|---|---|
+| Frontend | React 18, Vite 5, React Query, React Router v6, Recharts |
+| Backend | FastAPI, Python 3.11, SQLAlchemy, Alembic, JWT |
+| Database | PostgreSQL, Redis |
+| Realtime | Socket.IO |
 
 ---
 
 ## 📄 License
 
-Proprietary - E-commerce Intelligence Platform
-
----
-
-## 🆘 Support
-
-- **Issues:** Check [STARTUP_GUIDE.md](STARTUP_GUIDE.md) troubleshooting section
-- **Login Problems:** See [HOW_TO_LOGIN.md](HOW_TO_LOGIN.md)
-- **Architecture:** See [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md)
-
----
-
-## 🎉 Getting Started
-
-1. Run `.\start-all.ps1` (Windows) or `./start-all.sh` (Linux/Mac)
-2. Create test user at http://localhost:8000/docs
-3. Login at http://localhost:5173
-4. Explore the platform!
-
-**Happy coding!** 🚀
+Proprietary — Mercora / E-commerce Intelligence Platform
