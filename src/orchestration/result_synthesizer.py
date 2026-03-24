@@ -181,6 +181,8 @@ class ResultSynthesizer:
                 insights.extend(self._extract_sentiment_insights(result, agent_name))
             elif agent_type == AgentType.DEMAND_FORECAST:
                 insights.extend(self._extract_forecast_insights(result, agent_name))
+            elif agent_type.value == 'sales':
+                insights.extend(self._extract_sales_insights(result, agent_name))
         
         logger.info(f"Total insights extracted: {len(insights)}")
         return insights
@@ -449,6 +451,93 @@ class ResultSynthesizer:
         
         return insights
     
+    def _extract_sales_insights(self, result: Dict[str, Any], agent_name: str) -> List[Insight]:
+        """Extract insights from sales agent results"""
+        insights = []
+        data = result.get("data") if result.get("data") is not None else result
+        if isinstance(data, dict) and 'data' in data:
+            data = data['data']
+
+        analysis_type = data.get('analysis_type', '') if isinstance(data, dict) else ''
+        agent_confidence = result.get("confidence", 0.9)
+
+        if analysis_type == 'revenue_by_category':
+            categories = data.get('categories', [])
+            if categories:
+                evidence = [
+                    SupportingEvidence(
+                        evidence_id=str(uuid4()),
+                        insight_id="",
+                        source_data_type="sales_records",
+                        source_record_ids=[],
+                        data_lineage_path=["sales_agent", "category_aggregation"],
+                        confidence=agent_confidence,
+                        transformation_applied=json.dumps({
+                            "sku": cat['category'],
+                            "name": cat['category'],
+                            "badge": f"₹{cat['total_revenue']:,.0f}",
+                            "badge_variant": "success",
+                            "metrics": [
+                                {"label": "Revenue", "value": f"₹{cat['total_revenue']:,.2f}"},
+                                {"label": "Units", "value": str(cat['total_units'])},
+                            ]
+                        })
+                    )
+                    for cat in categories[:10]
+                ]
+                insight = Insight(
+                    insight_id=str(uuid4()),
+                    title="Revenue by Category",
+                    description=data.get('message', f"Revenue breakdown across {len(categories)} categories"),
+                    category="sales",
+                    agent_source=agent_name,
+                    confidence=agent_confidence,
+                    supporting_evidence=evidence
+                )
+                for ev in insight.supporting_evidence:
+                    ev.insight_id = insight.insight_id
+                insights.append(insight)
+
+        elif analysis_type == 'top_products':
+            products = data.get('products', [])
+            if products:
+                evidence = [
+                    SupportingEvidence(
+                        evidence_id=str(uuid4()),
+                        insight_id="",
+                        source_data_type="sales_records",
+                        source_record_ids=[],
+                        data_lineage_path=["sales_agent", "product_aggregation"],
+                        confidence=agent_confidence,
+                        transformation_applied=json.dumps({
+                            "sku": p['sku'],
+                            "name": p['name'],
+                            "badge": f"₹{p['total_revenue']:,.0f}",
+                            "badge_variant": "success",
+                            "metrics": [
+                                {"label": "Revenue", "value": f"₹{p['total_revenue']:,.2f}"},
+                                {"label": "Units", "value": str(p['total_units'])},
+                                {"label": "Category", "value": p['category']},
+                            ]
+                        })
+                    )
+                    for p in products[:10]
+                ]
+                insight = Insight(
+                    insight_id=str(uuid4()),
+                    title="Top Products by Revenue",
+                    description=data.get('message', f"Top {len(products)} products by revenue"),
+                    category="sales",
+                    agent_source=agent_name,
+                    confidence=agent_confidence,
+                    supporting_evidence=evidence
+                )
+                for ev in insight.supporting_evidence:
+                    ev.insight_id = insight.insight_id
+                insights.append(insight)
+
+        return insights
+
     def _extract_metrics(self, agent_results: Dict[AgentType, Dict[str, Any]]) -> List[MetricWithTrend]:
         """Extract metrics with trends from agent results"""
         metrics = []

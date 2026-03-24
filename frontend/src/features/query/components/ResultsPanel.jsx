@@ -1,285 +1,168 @@
-import React, { useState } from 'react';
-import { ExecutiveSummary } from './ExecutiveSummary';
-import { InsightCard } from './InsightCard';
-import { DataTable } from '../../../components/molecules/DataTable';
-import { ChartContainer } from '../../../components/molecules/ChartContainer';
-import { Button } from '../../../components/atoms/Button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState } from 'react';
 import styles from './ResultsPanel.module.css';
 
-export const ResultsPanel = ({
-  results = null,
-  onExport,
-  onShare,
-  className = '',
-  ...props
-}) => {
-  const [expandedSections, setExpandedSections] = useState({
-    summary: true,
-    insights: true,
-    data: true,
-    visualization: true,
-    actions: true,
-  });
+// Renders the backend's rule-based summary string (newline-separated) as structured markup
+function SummaryText({ text }) {
+  if (!text) return null;
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  return (
+    <div className={styles.summaryLines}>
+      {lines.map((line, i) => {
+        if (line.startsWith('- ')) {
+          return <p key={i} className={styles.summaryBullet}>{line.slice(2)}</p>;
+        }
+        if (line.endsWith(':') || line.match(/^(Analysis for|Overall Confidence|Key Findings|Critical Risks|Recommended Actions)/)) {
+          return <p key={i} className={styles.summarySection}>{line}</p>;
+        }
+        return <p key={i} className={styles.summaryCardText}>{line}</p>;
+      })}
+    </div>
+  );
+}
 
-  if (!results) {
-    return null;
-  }
+export const ResultsPanel = ({ results = null, onExport, onShare, onExplore, className = '' }) => {
+  const [summaryOpen, setSummaryOpen] = useState(true);
 
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+  if (!results) return null;
 
-  const handleExport = (format) => {
-    if (onExport) {
-      onExport(format, results);
-    }
-  };
+  // Backend may send 0.875 (fraction) or 87.5 (already %) — normalise to 0–100
+  const confidence = results.confidence != null
+    ? Math.round(results.confidence > 1 ? results.confidence : results.confidence * 100)
+    : null;
 
-  const renderVisualization = () => {
-    if (!results.visualization) return null;
+  const productCount = results.insights?.length ?? 0;
 
-    const { type, data } = results.visualization;
-
-    if (type === 'line' && data) {
-      return (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-            <XAxis
-              dataKey="name"
-              stroke="var(--text-tertiary)"
-              style={{ fontSize: '0.75rem' }}
-            />
-            <YAxis
-              stroke="var(--text-tertiary)"
-              style={{ fontSize: '0.75rem' }}
-            />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="var(--primary-color)"
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    }
-
-    return <p className={styles.placeholder}>Visualization not available</p>;
-  };
+  // Pull sentiment threshold from metrics if available, fallback to a readable label
+  const sentimentMetric = results.metrics?.find(
+    (m) => m.name?.toLowerCase().includes('sentiment') || m.key?.toLowerCase().includes('sentiment')
+  );
+  const sentimentThreshold = sentimentMetric
+    ? `${sentimentMetric.value}${sentimentMetric.unit || ''}`
+    : results.summary?.text?.match(/(\d+)%\s*(?:positive\s*)?sentiment/i)?.[1]
+      ? `>${results.summary.text.match(/(\d+)%\s*(?:positive\s*)?sentiment/i)[1]}%`
+      : null;
 
   return (
-    <div className={`${styles.container} ${className}`} {...props}>
+    <div className={`${styles.container} ${className}`}>
+
+      {/* ── Header ── */}
       <div className={styles.header}>
         <h2 className={styles.title}>Query Results</h2>
-        <div className={styles.headerActions}>
+        <div className={styles.actions}>
           {onShare && (
-            <Button variant="secondary" size="sm" onClick={onShare}>
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button type="button" className={styles.btnOutline} onClick={onShare}>
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
               Share
-            </Button>
+            </button>
           )}
           {onExport && (
-            <div className={styles.exportDropdown}>
-              <Button variant="primary" size="sm" onClick={() => handleExport('pdf')}>
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export
-              </Button>
-            </div>
+            <button type="button" className={styles.btnExport} onClick={() => onExport('pdf')}>
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export
+            </button>
           )}
         </div>
       </div>
 
-      {/* Executive Summary */}
+      {/* ── Metric cards ── */}
+      <div className={styles.metrics}>
+        {confidence != null && (
+          <div className={styles.metricCard}>
+            <span className={styles.metricValue}>{confidence}%</span>
+            <span className={styles.metricLabel}>Overall confidence</span>
+          </div>
+        )}
+        <div className={styles.metricCard}>
+          <span className={styles.metricValue}>{productCount}</span>
+          <span className={styles.metricLabel}>Products found</span>
+        </div>
+        {sentimentThreshold && (
+          <div className={styles.metricCard}>
+            <span className={styles.metricValue}>{sentimentThreshold}</span>
+            <span className={styles.metricLabel}>Sentiment threshold</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Executive Summary (collapsible) ── */}
       {results.summary && (
-        <section className={styles.section}>
+        <div className={styles.section}>
           <button
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('summary')}
-            aria-expanded={expandedSections.summary}
+            type="button"
+            className={styles.sectionToggle}
+            onClick={() => setSummaryOpen((o) => !o)}
+            aria-expanded={summaryOpen}
           >
-            <h3 className={styles.sectionTitle}>Executive Summary</h3>
-            <svg
-              className={`${styles.expandIcon} ${expandedSections.summary ? styles.expanded : ''}`}
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <span className={styles.sectionTitle}>Executive Summary</span>
+            <span className={styles.collapseBtn}>
+              <svg
+                width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                style={{ transform: summaryOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              {summaryOpen ? 'Collapse' : 'Expand'}
+            </span>
           </button>
-          {expandedSections.summary && (
-            <div className={styles.sectionContent}>
-              <ExecutiveSummary
-                summary={results.summary.text}
-                keyFindings={results.summary.keyFindings}
-              />
-            </div>
-          )}
-        </section>
-      )}
 
-      {/* Insights */}
-      {results.insights && results.insights.length > 0 && (
-        <section className={styles.section}>
-          <button
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('insights')}
-            aria-expanded={expandedSections.insights}
-          >
-            <h3 className={styles.sectionTitle}>Key Insights</h3>
-            <svg
-              className={`${styles.expandIcon} ${expandedSections.insights ? styles.expanded : ''}`}
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {expandedSections.insights && (
-            <div className={styles.sectionContent}>
-              <div className={styles.insightsGrid}>
-                {results.insights.map((insight, index) => (
-                  <InsightCard
-                    key={index}
-                    title={insight.title}
-                    description={insight.description}
-                    value={insight.value}
-                    change={insight.change}
-                    trend={insight.trend}
-                    variant={insight.variant}
-                    icon={insight.icon}
-                  />
-                ))}
+          {summaryOpen && (
+            <div className={styles.sectionBody}>
+              {/* Confidence bar */}
+              {confidence != null && (
+                <div className={styles.confRow}>
+                  <span className={styles.confLabel}>Confidence level</span>
+                  <span className={styles.confValue}>{confidence}%</span>
+                  <div className={styles.barTrack}>
+                    <div className={styles.barFill} style={{ width: `${confidence}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Summary card with accent border */}
+              <div className={styles.summaryCard}>
+                <h4 className={styles.summaryCardTitle}>Analysis overview</h4>
+                <SummaryText text={results.summary.text} />
               </div>
-            </div>
-          )}
-        </section>
-      )}
 
-      {/* Data Table */}
-      {results.data && results.data.length > 0 && (
-        <section className={styles.section}>
-          <button
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('data')}
-            aria-expanded={expandedSections.data}
-          >
-            <h3 className={styles.sectionTitle}>Detailed Data</h3>
-            <svg
-              className={`${styles.expandIcon} ${expandedSections.data ? styles.expanded : ''}`}
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {expandedSections.data && (
-            <div className={styles.sectionContent}>
-              <DataTable
-                columns={results.columns || []}
-                data={results.data}
-                pageSize={10}
-              />
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Visualization */}
-      {results.visualization && (
-        <section className={styles.section}>
-          <button
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('visualization')}
-            aria-expanded={expandedSections.visualization}
-          >
-            <h3 className={styles.sectionTitle}>Visualization</h3>
-            <svg
-              className={`${styles.expandIcon} ${expandedSections.visualization ? styles.expanded : ''}`}
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {expandedSections.visualization && (
-            <div className={styles.sectionContent}>
-              <ChartContainer height={300}>
-                {renderVisualization()}
-              </ChartContainer>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Action Items */}
-      {results.actionItems && results.actionItems.length > 0 && (
-        <section className={styles.section}>
-          <button
-            className={styles.sectionHeader}
-            onClick={() => toggleSection('actions')}
-            aria-expanded={expandedSections.actions}
-          >
-            <h3 className={styles.sectionTitle}>Recommended Actions</h3>
-            <svg
-              className={`${styles.expandIcon} ${expandedSections.actions ? styles.expanded : ''}`}
-              width="20"
-              height="20"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {expandedSections.actions && (
-            <div className={styles.sectionContent}>
-              <ul className={styles.actionsList}>
-                {results.actionItems.map((action, index) => (
-                  <li key={index} className={styles.actionItem}>
-                    <div className={styles.actionIcon}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+              {/* Key findings */}
+              {results.insights && results.insights.length > 0 && (
+                <div className={styles.findings}>
+                  <p className={styles.findingsLabel}>KEY FINDINGS</p>
+                  {results.insights.map((insight, i) => (
+                    <div key={i} className={styles.findingCard}>
+                      <span className={styles.checkIcon}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="12" r="10" fill="#16a34a" opacity="0.12" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} stroke="#16a34a" d="M8 12l3 3 5-5" />
+                        </svg>
+                      </span>
+                      <div className={styles.findingBody}>
+                        <p className={styles.findingTitle}>{insight.title}</p>
+                        <p className={styles.findingMeta}>{insight.description}</p>
+                      </div>
                     </div>
-                    <div className={styles.actionContent}>
-                      <h4 className={styles.actionTitle}>{action.title}</h4>
-                      <p className={styles.actionDescription}>{action.description}</p>
-                      {action.priority && (
-                        <span className={`${styles.actionPriority} ${styles[`priority-${action.priority}`]}`}>
-                          {action.priority}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </section>
+        </div>
+      )}
+
+      {/* ── Explore breakdown ── */}
+      {onExplore && (
+        <div className={styles.exploreRow}>
+          <button type="button" className={styles.exploreBtn} onClick={onExplore}>
+            Explore detailed breakdown
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </button>
+        </div>
       )}
     </div>
   );

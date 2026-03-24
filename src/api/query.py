@@ -241,21 +241,30 @@ async def execute_query(
                 # For MVP, skip cache and continue to execution
                 pass
         
-        # STEP 2: LLM Reasoning Engine - Query understanding
+        # STEP 2: LLM Reasoning Engine - Query understanding (fallback only)
         llm_engine = LLMReasoningEngine(tenant_id=tenant_id)
         intent, parameters = llm_engine.understand_query(request.query_text)
         
-        # Select agents based on intent ONLY (don't combine with router suggestions)
-        suggested_agents = llm_engine.select_agents(intent, parameters)
+        # Use router's agents if it found a deterministic pattern match,
+        # otherwise fall back to LLM agent selection
+        router_agents = routing_decision.required_agents
+        router_matched = bool(router_agents) and not (
+            # Router falls back to all-agents when no pattern matched
+            set(a.value for a in router_agents) == {'pricing', 'sentiment', 'demand_forecast'}
+            and routing_decision.execution_mode.value == 'deep'
+        )
+
+        if router_matched:
+            required_agents = router_agents
+            logger.info(f"[ORCHESTRATION] Using router agents: {[a.value for a in required_agents]}")
+        else:
+            suggested_agents = llm_engine.select_agents(intent, parameters)
+            required_agents = suggested_agents
+            logger.info(f"[ORCHESTRATION] Using LLM agents: {[a.value for a in required_agents]}, intent={intent}")
         
-        logger.info(f"[ORCHESTRATION] Query understanding: intent={intent}, "
-                    f"parameters={parameters}, "
-                    f"selected_agents={[a.value for a in suggested_agents]}")
+        logger.info(f"[ORCHESTRATION] Query understanding: intent={intent}, parameters={parameters}")
         
-        # Use ONLY the agents selected by LLM based on intent
-        required_agents = suggested_agents
-        
-        # STEP 3: Create Execution Plan
+        # STEP 3: Create Execution Plan using the resolved required_agents
         execution_mode = routing_decision.execution_mode
         execution_plan = llm_engine.generate_execution_plan(
             query_id=str(uuid4()),
@@ -263,6 +272,25 @@ async def execute_query(
             intent=intent,
             parameters=parameters,
             execution_mode=execution_mode
+        )
+        
+        # Override plan tasks/groups with the resolved agents (router may differ from LLM)
+        from src.schemas.orchestration import AgentTask, ExecutionPlan as SchemaPlan
+        from datetime import timedelta
+        overridden_tasks = [
+            AgentTask(
+                agent_type=agent,
+                parameters=parameters,
+                dependencies=[],
+                timeout_seconds=120 if execution_mode.value == 'quick' else 300
+            )
+            for agent in required_agents
+        ]
+        execution_plan = SchemaPlan(
+            tasks=overridden_tasks,
+            execution_mode=execution_mode,
+            parallel_groups=[required_agents],
+            estimated_duration=timedelta(seconds=60)
         )
         
         logger.info(f"[ORCHESTRATION] Execution plan: {len(execution_plan.tasks)} tasks, "

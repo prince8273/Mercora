@@ -38,6 +38,7 @@ class QueryIntent(str, Enum):
     COMPETITIVE_INTELLIGENCE = "competitive_intelligence"
     INVENTORY_OPTIMIZATION = "inventory_optimization"
     PRODUCT_PERFORMANCE = "product_performance"
+    SALES_ANALYSIS = "sales_analysis"
     MULTI_AGENT = "multi_agent"
     UNKNOWN = "unknown"
 
@@ -211,15 +212,18 @@ class LLMReasoningEngine:
             QueryIntent.DEMAND_FORECAST: [AgentType.DEMAND_FORECAST],
             QueryIntent.COMPETITIVE_INTELLIGENCE: [AgentType.PRICING],
             QueryIntent.INVENTORY_OPTIMIZATION: [AgentType.DEMAND_FORECAST],
-            QueryIntent.PRODUCT_PERFORMANCE: [AgentType.SENTIMENT],  # Changed: only sentiment for product performance
+            QueryIntent.SALES_ANALYSIS: [AgentType.SALES],
+            QueryIntent.PRODUCT_PERFORMANCE: [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST],
             QueryIntent.MULTI_AGENT: [
                 AgentType.PRICING,
                 AgentType.SENTIMENT,
                 AgentType.DEMAND_FORECAST
             ],
+            # UNKNOWN: run all agents so we don't silently return wrong results
+            QueryIntent.UNKNOWN: [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST],
         }
         
-        agents = intent_agent_map.get(intent, [AgentType.SENTIMENT])  # Default to sentiment only
+        agents = intent_agent_map.get(intent, [AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST])
         
         # Check if parameters specify specific agents
         if "agents" in parameters:
@@ -493,16 +497,21 @@ Respond in JSON format:
         """Fallback keyword-based query understanding"""
         query_lower = query.lower()
         
-        # Keyword-based intent detection
-        if any(word in query_lower for word in ["price", "pricing", "cost", "competitor"]):
+        # Keyword-based intent detection — order matters, most specific first
+        if any(word in query_lower for word in ["price", "pricing", "cost", "competitor", "gap", "cheaper", "expensive"]):
             return QueryIntent.PRICING_ANALYSIS, {}
-        elif any(word in query_lower for word in ["review", "sentiment", "feedback", "customer"]):
-            return QueryIntent.SENTIMENT_ANALYSIS, {}
-        elif any(word in query_lower for word in ["forecast", "demand", "inventory", "stock"]):
+        elif any(word in query_lower for word in ["revenue", "sales", "category", "earning", "income", "turnover"]):
+            return QueryIntent.SALES_ANALYSIS, {}
+        elif any(word in query_lower for word in ["forecast", "demand", "inventory", "stock", "reorder", "predict", "future", "next month", "next quarter"]):
             return QueryIntent.DEMAND_FORECAST, {}
-        elif any(word in query_lower for word in ["performance", "analysis", "comprehensive"]):
+        elif any(word in query_lower for word in ["review", "sentiment", "feedback", "customer", "rating", "complaint", "satisfaction"]):
+            return QueryIntent.SENTIMENT_ANALYSIS, {}
+        elif any(word in query_lower for word in ["top", "best", "selling", "performance", "profit", "margin"]):
             return QueryIntent.PRODUCT_PERFORMANCE, {}
+        elif any(word in query_lower for word in ["comprehensive", "full", "complete", "all", "everything", "analysis"]):
+            return QueryIntent.MULTI_AGENT, {}
         else:
+            # Truly unknown — run all agents
             return QueryIntent.UNKNOWN, {}
     
     def _extract_product_ids(self, parameters: Dict[str, Any]) -> List[UUID]:

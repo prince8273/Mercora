@@ -185,6 +185,34 @@ class QueryRouter:
                 execution_mode=ExecutionMode.DEEP,
                 priority=30
             ),
+
+            # Sales / Revenue queries - Quick Mode
+            InternalQueryPattern(
+                name="sales_analysis",
+                patterns=[
+                    r"revenue.*by.*category",
+                    r"revenue.*category",
+                    r"category.*revenue",
+                    r"sales.*by.*category",
+                    r"category.*sales",
+                    r"revenue.*breakdown",
+                    r"sales.*breakdown",
+                    r"top.*category",
+                    r"best.*category",
+                    r"revenue.*product",
+                    r"total.*revenue",
+                    r"total.*sales",
+                    r"sales.*performance",
+                    r"top.*selling",
+                    r"best.*selling",
+                    r"most.*selling",
+                    r"highest.*sales",
+                    r"highest.*revenue",
+                ],
+                agents=[AgentType.SALES],
+                execution_mode=ExecutionMode.QUICK,
+                priority=20
+            ),
         ]
         
         # Sort by priority (higher priority first)

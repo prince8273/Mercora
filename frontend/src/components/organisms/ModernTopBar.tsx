@@ -1,4 +1,4 @@
-import { Bell, Search, User, LogOut, Settings } from 'lucide-react'
+import { Bell, Search, User, LogOut, Settings, Menu } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import {
   DropdownMenu,
@@ -11,7 +11,12 @@ import {
 import { Button } from "@/components/ui/button"
 import './TopBar.css'
 
-export default function ModernTopBar() {
+interface ModernTopBarProps {
+  mobileOpen?: boolean
+  setMobileOpen?: (open: boolean) => void
+}
+
+export default function ModernTopBar({ mobileOpen, setMobileOpen }: ModernTopBarProps) {
   const { user, logout } = useAuth()
 
   const handleLogout = () => {
@@ -19,13 +24,22 @@ export default function ModernTopBar() {
   }
 
   const handleSettings = () => {
-    // Navigate to settings page
     window.location.href = '/dashboard/settings'
   }
 
   return (
     <header className="topbar">
       <div className="topbar-left">
+        {/* Hamburger — mobile only */}
+        {setMobileOpen && (
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+        )}
         <h1 className="topbar-logo">E-commerce Intelligence</h1>
       </div>
 

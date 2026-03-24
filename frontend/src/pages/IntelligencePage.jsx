@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../components/molecules/PageHeader';
 import {
   QueryBuilder,
@@ -21,6 +22,13 @@ export default function IntelligencePage() {
   const [queryResults, setQueryResults] = useState(null);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
+
+  // Clear previous results on every page load/refresh
+  useEffect(() => {
+    sessionStorage.removeItem('lastQueryResults');
+    sessionStorage.removeItem('lastQueryId');
+  }, []);
 
   // Hooks
   const { data: queryHistory } = useQueryHistory({ limit: 10 });
@@ -93,7 +101,9 @@ export default function IntelligencePage() {
       };
       
       setQueryResults(transformedResults);
+      sessionStorage.setItem('lastQueryResults', JSON.stringify(transformedResults));
       setCurrentQueryId(backendData.report_id);
+      sessionStorage.setItem('lastQueryId', backendData.report_id || '');
       
       if (isPollingMode) {
         toast.info('Query Submitted', 'Using polling mode for progress updates', 3000);
@@ -122,6 +132,9 @@ export default function IntelligencePage() {
     resetExecution();
     setQueryResults(null);
     setCurrentQueryId(null);
+    sessionStorage.removeItem('lastQueryResults');
+    sessionStorage.removeItem('lastQueryId');
+    sessionStorage.removeItem('breakdownResults');
     executeQueryMutation.mutate(queryData);
   };
 
@@ -141,18 +154,52 @@ export default function IntelligencePage() {
   };
 
   const handleExport = (format) => {
-    if (currentQueryId) {
-      exportResultsMutation.mutate({
-        queryId: currentQueryId,
-        format,
-      });
-      toast.info('Export Started', `Exporting results as ${format.toUpperCase()}...`);
+    const queryId = currentQueryId || queryResults?.id;
+    if (!queryId) {
+      toast.error('Export Failed', 'No query results to export');
+      return;
     }
+    toast.info('Export Started', `Exporting results as ${format.toUpperCase()}...`);
+    exportResultsMutation.mutate(
+      { queryId, format },
+      {
+        onSuccess: (data) => {
+          // If backend returns a download URL, open it
+          const url = data?.download_url || data?.url;
+          if (url) {
+            window.open(url, '_blank');
+          } else if (data) {
+            // Fallback: treat response as blob/text and download
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `query-results-${queryId}.${format}`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+          }
+          toast.success('Export Ready', 'Your export is ready');
+        },
+        onError: (err) => {
+          toast.error('Export Failed', err?.message || 'Failed to export results');
+        },
+      }
+    );
   };
 
   const handleShare = () => {
-    // Implement share functionality
-    toast.info('Share', 'Share functionality coming soon');
+    const queryId = currentQueryId || queryResults?.id;
+    const shareUrl = queryId
+      ? `${window.location.origin}/intelligence?queryId=${queryId}`
+      : window.location.href;
+    navigator.clipboard.writeText(shareUrl).then(
+      () => toast.success('Link Copied', 'Shareable link copied to clipboard'),
+      () => toast.error('Copy Failed', 'Could not copy link to clipboard')
+    );
+  };
+
+  const handleExploreBreakdown = () => {
+    sessionStorage.setItem('breakdownResults', JSON.stringify(queryResults));
+    window.open('/dashboard/intelligence/breakdown', '_blank');
   };
 
   const handleSelectHistory = (historyItem) => {
@@ -205,12 +252,13 @@ export default function IntelligencePage() {
         )}
 
         {/* Results Panel */}
-        {queryResults && (status === 'completed' || executeQueryMutation.isSuccess) && (
+        {queryResults && (
           <div className={styles.resultsSection}>
             <ResultsPanel
               results={queryResults}
               onExport={handleExport}
               onShare={handleShare}
+              onExplore={queryResults ? handleExploreBreakdown : undefined}
             />
           </div>
         )}

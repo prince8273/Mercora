@@ -18,6 +18,7 @@ class AgentType(str, Enum):
     SENTIMENT = "sentiment"
     DEMAND_FORECAST = "demand_forecast"
     DATA_QA = "data_qa"
+    SALES = "sales"
 
 
 class Priority(str, Enum):

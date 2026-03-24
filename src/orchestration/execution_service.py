@@ -330,6 +330,9 @@ class ExecutionService:
             product_ids.extend(query_data['product_ids'])
         
         if not product_ids:
+            # Sales agent doesn't need product_ids — it queries all tenant data
+            if agent_type == AgentType.SALES:
+                return await self._execute_sales_agent(db, tenant_id, query_data.get('query_text', ''), parameters)
             # Return mock data if no products found
             return {
                 'agent': agent_type.value,
@@ -350,8 +353,9 @@ class ExecutionService:
             return await self._execute_forecast_agent(db, tenant_id, product_ids, parameters)
         elif agent_type == AgentType.DATA_QA:
             return await self._execute_qa_agent(db, tenant_id, product_ids, parameters)
-        else:
-            # Unknown agent type
+        elif agent_type == AgentType.SALES:
+            return await self._execute_sales_agent(db, tenant_id, query_data.get('query_text', ''), parameters)
+        else:            # Unknown agent type
             return {
                 'agent': agent_type.value,
                 'status': 'unsupported',
@@ -763,6 +767,118 @@ class ExecutionService:
             }
         }
     
+    async def _execute_sales_agent(
+        self,
+        db,
+        tenant_id: UUID,
+        query_text: str,
+        parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Execute sales/revenue analysis agent — handles revenue by category, top sellers, etc."""
+        import logging
+        from sqlalchemy import select, func, desc
+        from src.models.sales_record import SalesRecord
+        from src.models.product import Product
+
+        logger = logging.getLogger(__name__)
+        query_lower = query_text.lower()
+
+        try:
+            # Revenue by category
+            if any(k in query_lower for k in ['category', 'revenue by', 'sales by']):
+                result = await db.execute(
+                    select(
+                        Product.category,
+                        func.sum(SalesRecord.revenue).label('total_revenue'),
+                        func.sum(SalesRecord.quantity).label('total_units'),
+                        func.count(SalesRecord.id).label('order_count')
+                    )
+                    .join(Product, SalesRecord.product_id == Product.id)
+                    .where(SalesRecord.tenant_id == tenant_id)
+                    .group_by(Product.category)
+                    .order_by(desc('total_revenue'))
+                )
+                rows = result.all()
+
+                if not rows:
+                    return {'agent': 'sales', 'status': 'no_data', 'confidence': 0.0,
+                            'data': {'message': 'No sales data found'}}
+
+                categories = [
+                    {
+                        'category': row.category or 'Uncategorized',
+                        'total_revenue': float(row.total_revenue),
+                        'total_units': int(row.total_units),
+                        'order_count': int(row.order_count),
+                    }
+                    for row in rows
+                ]
+                top = categories[0]
+                return {
+                    'agent': 'sales',
+                    'status': 'completed',
+                    'confidence': 0.95,
+                    'data': {
+                        'analysis_type': 'revenue_by_category',
+                        'message': f'Revenue breakdown across {len(categories)} categories. '
+                                   f'Top category: {top["category"]} with ₹{top["total_revenue"]:,.2f}',
+                        'categories': categories,
+                        'total_revenue': sum(c['total_revenue'] for c in categories),
+                        'total_units': sum(c['total_units'] for c in categories),
+                    }
+                }
+
+            # Top selling products
+            result = await db.execute(
+                select(
+                    Product.name,
+                    Product.sku,
+                    Product.category,
+                    func.sum(SalesRecord.quantity).label('total_units'),
+                    func.sum(SalesRecord.revenue).label('total_revenue'),
+                )
+                .join(Product, SalesRecord.product_id == Product.id)
+                .where(SalesRecord.tenant_id == tenant_id)
+                .group_by(Product.id, Product.name, Product.sku, Product.category)
+                .order_by(desc('total_revenue'))
+                .limit(10)
+            )
+            rows = result.all()
+
+            if not rows:
+                return {'agent': 'sales', 'status': 'no_data', 'confidence': 0.0,
+                        'data': {'message': 'No sales data found'}}
+
+            products = [
+                {
+                    'name': row.name,
+                    'sku': row.sku,
+                    'category': row.category or 'Uncategorized',
+                    'total_units': int(row.total_units),
+                    'total_revenue': float(row.total_revenue),
+                }
+                for row in rows
+            ]
+            top = products[0]
+            return {
+                'agent': 'sales',
+                'status': 'completed',
+                'confidence': 0.95,
+                'data': {
+                    'analysis_type': 'top_products',
+                    'message': f'Top {len(products)} products by revenue. '
+                               f'Leader: {top["name"]} (₹{top["total_revenue"]:,.2f})',
+                    'products': products,
+                    'total_revenue': sum(p['total_revenue'] for p in products),
+                    'total_units': sum(p['total_units'] for p in products),
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Sales agent failed: {e}", exc_info=True)
+            return {'agent': 'sales', 'status': 'error', 'confidence': 0.0,
+                    'data': {'message': f'Error: {str(e)}'}}
+
     def handle_agent_failure(
         self,
         agent: AgentType,

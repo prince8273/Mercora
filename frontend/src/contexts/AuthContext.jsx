@@ -22,16 +22,40 @@ export function AuthProvider({ children }) {
 
     if (token && storedUser) {
       try {
-        setUser(JSON.parse(storedUser))
+        // Restore session from localStorage immediately (no redirect on refresh)
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser)
         setTenant(storedTenant ? JSON.parse(storedTenant) : null)
         setIsAuthenticated(true)
+        setIsLoading(false)
+
+        // Silently validate token in background - only clear if truly invalid
+        authService.getCurrentUser(token).then((freshUser) => {
+          if (freshUser) {
+            setUser(freshUser)
+            localStorage.setItem('user', JSON.stringify(freshUser))
+          }
+        }).catch((err) => {
+          // Only logout if it's a 401 (invalid token), not network errors
+          if (err.response?.status === 401) {
+            console.warn('Token invalid on background check, logging out')
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            localStorage.removeItem('tenantId')
+            localStorage.removeItem('tenant')
+            setUser(null)
+            setTenant(null)
+            setIsAuthenticated(false)
+          }
+          // For network errors or other issues, keep the user logged in
+        })
       } catch (error) {
         console.error('Failed to parse stored user data:', error)
-        logout()
+        setIsLoading(false)
       }
+    } else {
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }, [])
 
   const login = async (email, password) => {

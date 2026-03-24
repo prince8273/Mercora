@@ -15,6 +15,7 @@ import PricingPage from '../pages/PricingPage'
 import SentimentPage from '../pages/SentimentPage'
 import ForecastPage from '../pages/ForecastPage'
 import SettingsPage from '../pages/SettingsPage'
+import QueryBreakdownPage from '../pages/QueryBreakdownPage'
 import { DemoBackgroundBeams } from '../components/demo/DemoBackgroundBeams'
 import VideoDemo from '../pages/VideoDemo'
 import Simple11xDemo from '../pages/Simple11xDemo'
@@ -103,6 +104,7 @@ export default function AppRoutes() {
         <Route index element={<Navigate to="/dashboard/overview" replace />} />
         <Route path="overview" element={<PageErrorBoundary><OverviewPage /></PageErrorBoundary>} />
         <Route path="intelligence" element={<PageErrorBoundary><IntelligencePage /></PageErrorBoundary>} />
+        <Route path="intelligence/breakdown" element={<PageErrorBoundary><QueryBreakdownPage /></PageErrorBoundary>} />
         <Route path="pricing" element={<PageErrorBoundary><PricingPage /></PageErrorBoundary>} />
         <Route path="sentiment" element={<PageErrorBoundary><SentimentPage /></PageErrorBoundary>} />
         <Route path="forecast" element={<PageErrorBoundary><ForecastPage /></PageErrorBoundary>} />

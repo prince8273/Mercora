@@ -71,11 +71,10 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+export const SidebarBody = ({ mobileOpen, setMobileOpen, ...props }: React.ComponentProps<typeof motion.div> & { mobileOpen?: boolean; setMobileOpen?: (v: boolean) => void }) => {
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as React.ComponentProps<"div">)} />
     </>
   );
 };
@@ -89,11 +88,11 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col bg-white w-[300px] flex-shrink-0 border-r border-gray-200",
+        "h-full px-4 py-4 hidden md:flex md:flex-col bg-white flex-shrink-0 border-r border-gray-200",
         className
       )}
       animate={{
-        width: animate ? (open ? "300px" : "60px") : "300px",
+        width: animate ? (open ? "240px" : "60px") : "240px",
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -107,50 +106,61 @@ export const DesktopSidebar = ({
 export const MobileSidebar = ({
   className,
   children,
-  ...props
-}: React.ComponentProps<"div">) => {
-  const { open, setOpen } = useSidebar();
+  open: openProp,
+  setOpen: setOpenProp,
+}: React.ComponentProps<"div"> & { open?: boolean; setOpen?: (v: boolean) => void }) => {
+  const ctx = useSidebar();
+  const open = openProp !== undefined ? openProp : ctx.open;
+  const setOpen = setOpenProp !== undefined ? setOpenProp : ctx.setOpen;
   return (
-    <>
-      <div
-        className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-white w-full border-b border-gray-200"
-        )}
-        {...props}
-      >
-        <div className="flex justify-end z-20 w-full">
-          <Menu
-            className="text-gray-800 cursor-pointer"
-            onClick={() => setOpen(!open)}
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/40 z-[90] md:hidden"
+            onClick={() => setOpen(false)}
           />
-        </div>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ x: "-100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "-100%", opacity: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: "easeInOut",
-              }}
-              className={cn(
-                "fixed h-full w-full inset-0 bg-white p-10 z-[100] flex flex-col justify-between",
-                className
-              )}
+          {/* Drawer */}
+          <motion.div
+            initial={{ x: "-100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "-100%", opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={cn(
+              "fixed top-0 left-0 h-full w-64 bg-white p-6 z-[100] flex flex-col justify-between shadow-xl md:hidden",
+              className
+            )}
+          >
+            <div
+              className="absolute right-4 top-4 z-50 text-gray-800 cursor-pointer"
+              onClick={() => setOpen(false)}
             >
-              <div
-                className="absolute right-10 top-10 z-50 text-gray-800 cursor-pointer"
-                onClick={() => setOpen(!open)}
-              >
-                <X />
-              </div>
-              {children}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+              <X />
+            </div>
+            {children}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Hamburger trigger — use this inside ModernTopBar on mobile
+export const MobileMenuTrigger = ({ className }: { className?: string }) => {
+  const { setOpen, open } = useSidebar();
+  return (
+    <button
+      className={cn("md:hidden p-2 text-gray-700 hover:text-gray-900", className)}
+      onClick={() => setOpen(!open)}
+      aria-label="Open menu"
+    >
+      <Menu size={22} />
+    </button>
   );
 };
 
