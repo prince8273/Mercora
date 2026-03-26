@@ -58,6 +58,29 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const googleLogin = async (token, tokenType = 'access_token') => {
+    try {
+      const tokenResponse = await authService.googleLogin(token, tokenType)
+      const { access_token, token_type } = tokenResponse
+
+      localStorage.setItem('token', access_token)
+      localStorage.setItem('tokenType', token_type)
+
+      const userData = await authService.getCurrentUser(access_token)
+      localStorage.setItem('user', JSON.stringify(userData))
+      if (userData.tenant_id) localStorage.setItem('tenantId', userData.tenant_id)
+
+      setUser(userData)
+      setIsAuthenticated(true)
+      return { success: true }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Google login failed',
+      }
+    }
+  }
+
   const login = async (email, password) => {
     try {
       console.log('Starting login process for:', email)
@@ -188,6 +211,7 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     isLoading,
     login,
+    googleLogin,
     signup,
     logout,
     switchTenant,

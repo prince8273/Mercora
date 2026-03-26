@@ -179,7 +179,30 @@ class QueryRouter:
                     r"overall.*performance",
                     r"analyze.*everything",
                     r"pricing.*reviews.*demand",
-                    r"pricing.*sentiment.*forecast"
+                    r"pricing.*sentiment.*forecast",
+                    # Competitive threat / strategic queries — need all agents
+                    r"competitor.*slash",
+                    r"competitor.*cut.*price",
+                    r"competitor.*lower.*price",
+                    r"how.*exposed",
+                    r"best.*response",
+                    r"what.*should.*i.*do",
+                    r"strategic.*response",
+                    r"how.*vulnerable",
+                    r"price.*war",
+                    r"compete.*with",
+                    r"losing.*to.*competitor",
+                    r"double.*revenue",
+                    r"fastest.*lever",
+                    r"biggest.*risk",
+                    r"single.*most.*important",
+                    r"where.*am.*i.*strong",
+                    r"where.*am.*i.*weak",
+                    r"what.*is.*wrong.*with.*business",
+                    r"why.*sales.*drop",
+                    r"why.*revenue.*drop",
+                    r"sales.*drop.*review",
+                    r"review.*improve.*sales",
                 ],
                 agents=[AgentType.PRICING, AgentType.SENTIMENT, AgentType.DEMAND_FORECAST],
                 execution_mode=ExecutionMode.DEEP,
@@ -268,6 +291,22 @@ class QueryRouter:
                     r"how.*business.*doing",
                     r"overall.*performance",
                     r"business.*summary",
+                    r"give me a summary",
+                    r"business.*report",
+                    r"board.*ready",
+                    r"executive.*summary",
+                    r"summary.*business",
+                    r"quarterly.*report",
+                    r"this.*quarter",
+                    r"state.*business",
+                    r"how.*we.*doing",
+                    r"past.*months",
+                    r"last.*months",
+                    r"investor.*report",
+                    r"health.*report",
+                    r"status.*report",
+                    r"performance.*summary",
+                    r"year.*to.*date",
                     r"revenue.*trend",
                     r"sales.*trend",
                     r"month.*by.*month",
@@ -372,49 +411,39 @@ class QueryRouter:
         query: str,
         context: Optional[ConversationContext] = None
     ) -> RoutingDecision:
-        """
-        Route query to appropriate execution path.
-        
-        Args:
-            query: User's natural language query
-            context: Optional conversation context
-            
-        Returns:
-            RoutingDecision with routing decisions
-        """
+        """Route query to appropriate execution path."""
         logger.info(f"Routing query: '{query}'")
-        
-        # Normalize query
         query_lower = query.lower()
-        
+
         # Step 1: Pattern matching
         patterns = self.match_patterns(query_lower)
-        
+
         # Step 2: Determine execution mode
         execution_mode = self.determine_execution_mode(query_lower, patterns)
-        
+
         # Step 3: Collect required agents
         required_agents = []
         if patterns:
             for pattern in patterns:
                 required_agents.extend(pattern.suggested_agents)
-            # Remove duplicates while preserving order
             seen = set()
             required_agents = [x for x in required_agents if not (x in seen or seen.add(x))]
         else:
-            # Fallback: use the general agent — it can answer anything from the DB
-            required_agents = [AgentType.GENERAL]
+            # No pattern matched — ask Gemini to understand the query
+            try:
+                intent, params = self.llm_engine.understand_query(query)
+                required_agents = self.llm_engine.select_agents(intent, params)
+                logger.info(f"LLM routing: intent={intent}, agents={[a.value for a in required_agents]}")
+            except Exception as e:
+                logger.warning(f"LLM routing failed ({e}), falling back to GENERAL agent")
+                required_agents = [AgentType.GENERAL]
             execution_mode = ExecutionMode.QUICK
-        
+
         # Step 4: Generate cache key
         cache_key = self._generate_cache_key(query, required_agents)
-        
-        # Step 5: Cache will be checked at execution time (not here, since this is sync)
         use_cache = self.cache_manager is not None
-        
-        # Step 6: Estimate duration
         estimated_duration = self._estimate_duration(execution_mode, len(required_agents))
-        
+
         decision = RoutingDecision(
             execution_mode=execution_mode,
             required_agents=required_agents,
@@ -422,9 +451,8 @@ class QueryRouter:
             cache_key=cache_key,
             estimated_duration=estimated_duration
         )
-        
+
         logger.info(f"Routing decision: mode={execution_mode.value}, agents={[a.value for a in required_agents]}, cache={use_cache}")
-        
         return decision
     
     def _generate_cache_key(self, query: str, agents: List[AgentType]) -> str:

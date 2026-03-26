@@ -109,6 +109,9 @@ class ResultSynthesizer:
         """
         logger.info(f"Synthesizing results for query {query_id} from {len(agent_results)} agents")
         
+        # Stash for use in LLM summary generation
+        self._current_agent_results = agent_results
+
         # Extract insights from agent results
         insights = self._extract_insights(agent_results)
         
@@ -139,6 +142,37 @@ class ResultSynthesizer:
             prioritized_actions,
             overall_confidence
         )
+
+        # Cross-data reasoning — only when 2+ distinct agent types returned data
+        # and we have an LLM engine available (ENHANCED mode)
+        if (
+            self.synthesis_mode == SynthesisMode.ENHANCED
+            and self.llm_engine
+            and len(agent_results) >= 2
+        ):
+            # Build rich per-agent summaries using the same formatter
+            agent_summaries = {}
+            for agent_type, result in agent_results.items():
+                if not isinstance(result, dict):
+                    continue
+                # Use _format_agent_data_for_llm for a single agent
+                single = {agent_type: result}
+                rich_text = self._format_agent_data_for_llm(single)
+                if rich_text and rich_text != "No data available.":
+                    agent_summaries[agent_type.value] = rich_text
+
+            if len(agent_summaries) >= 2:
+                cross_insight = self.llm_engine.cross_data_reasoning(query, agent_summaries)
+                if cross_insight:
+                    insights.append(Insight(
+                        insight_id=str(uuid4()),
+                        title="Cross-Data Analysis",
+                        description=cross_insight,
+                        category="cross_analysis",
+                        agent_source="llm_reasoning",
+                        confidence=overall_confidence,
+                        supporting_evidence=[]
+                    ))
         
         # Create structured report
         report = StructuredReport(
@@ -1068,7 +1102,10 @@ class ResultSynthesizer:
         """Generate executive summary"""
         
         if self.synthesis_mode == SynthesisMode.ENHANCED and self.llm_engine:
-            return self._generate_llm_summary(query, insights, metrics, risks, action_items, overall_confidence)
+            return self._generate_llm_summary(
+                query, insights, metrics, risks, action_items,
+                overall_confidence, agent_results=self._current_agent_results
+            )
         else:
             return self._generate_rule_based_summary(query, insights, metrics, risks, action_items, overall_confidence)
     
@@ -1116,28 +1153,102 @@ class ResultSynthesizer:
         metrics: List[MetricWithTrend],
         risks: List[RiskAssessment],
         action_items: List[ActionItem],
-        overall_confidence: float
+        overall_confidence: float,
+        agent_results: Optional[Dict] = None
     ) -> str:
-        """Generate LLM-powered executive summary"""
-        # Prepare results for LLM
-        results_text = self._format_results_for_llm(insights, metrics, risks, action_items)
-        
-        # Get optimized prompt
-        system_prompt, user_prompt = self.prompt_optimizer.optimize_prompt(
-            "result_synthesis",
-            results=results_text
-        )
-        
+        """Generate LLM-powered narrative executive summary"""
+        # Build a rich data summary — prefer raw agent data over abstracted insights
+        if agent_results:
+            data_summary = self._format_agent_data_for_llm(agent_results)
+        else:
+            data_summary = self._format_results_for_llm(insights, metrics, risks, action_items)
+
         try:
-            # Call LLM using public API
-            summary = self.llm_engine.generate_summary(
-                content=user_prompt,
-                system_prompt=system_prompt
+            narrative = self.llm_engine.generate_narrative_summary(
+                query=query,
+                data_summary=data_summary,
+                overall_confidence=overall_confidence
             )
-            return summary
+            logger.info(f"[LLM SUMMARY] narrative returned: {repr(narrative[:120]) if narrative else 'None'}")
+            if narrative:
+                return narrative
+            logger.warning("[LLM SUMMARY] generate_narrative_summary returned None — falling back to rule-based")
         except Exception as e:
-            logger.error(f"LLM summary generation failed: {e}, falling back to rule-based")
-            return self._generate_rule_based_summary(query, insights, metrics, risks, action_items, overall_confidence)
+            logger.error(f"LLM narrative summary failed: {e}", exc_info=True)
+
+        # Fallback to rule-based
+        return self._generate_rule_based_summary(query, insights, metrics, risks, action_items, overall_confidence)
+
+    def _format_agent_data_for_llm(self, agent_results: Dict) -> str:
+        """Format raw agent data into a rich text block for the LLM."""
+        parts = []
+        for agent_type, result in agent_results.items():
+            if not isinstance(result, dict):
+                continue
+            data = result.get("data", {})
+            if not isinstance(data, dict):
+                continue
+            # Unwrap double-nesting (some agents wrap data.data)
+            if "data" in data and isinstance(data["data"], dict):
+                data = data["data"]
+
+            agent_name = agent_type.value.upper()
+            msg = data.get("message", "")
+            if msg:
+                parts.append(f"[{agent_name}] {msg}")
+
+            # GENERAL / SALES — flatten items table
+            items = data.get("items", [])
+            for item in items[:15]:
+                if isinstance(item, dict):
+                    row = "  " + " | ".join(
+                        f"{k}: {v}" for k, v in item.items()
+                        if v not in (None, "", []) and k not in ("low_reviews", "issues")
+                    )
+                    if row.strip():
+                        parts.append(row)
+
+            # PRICING — price gaps
+            for gap in data.get("price_gaps", [])[:10]:
+                parts.append(
+                    f"  Price gap: {gap.get('product_name','?')} | "
+                    f"our: ₹{gap.get('our_price',0):.2f} | "
+                    f"competitor: ₹{gap.get('competitor_price',0):.2f} | "
+                    f"gap: {gap.get('gap_percentage',0):+.1f}%"
+                )
+
+            # SENTIMENT — product sentiments
+            for ps in data.get("product_sentiments", [])[:10]:
+                parts.append(
+                    f"  Sentiment: {ps.get('product_name','?')} | "
+                    f"score: {ps.get('average_sentiment',0):.2f} | "
+                    f"reviews: {ps.get('review_count',0)} | "
+                    f"positive: {ps.get('positive_percentage',0):.0f}%"
+                )
+            # Complaint patterns
+            for cp in data.get("complaint_patterns", [])[:5]:
+                parts.append(
+                    f"  Complaint pattern: {cp.get('pattern','?')} | "
+                    f"frequency: {cp.get('frequency',0)} | "
+                    f"severity: {cp.get('severity','?')}"
+                )
+
+            # FORECAST — key numbers
+            for key in ["forecasted_demand", "demand_change_pct", "supply_gap", "trend"]:
+                val = data.get(key)
+                if val is not None:
+                    parts.append(f"  {key.replace('_',' ').title()}: {val}")
+
+            # Top-level numeric fields (revenue, units, etc.)
+            for key in ["total_revenue", "total_units", "total_orders", "overall_margin_pct",
+                        "total_complaints", "overall_avg_rating", "growth_pct",
+                        "aggregate_sentiment_score", "average_sentiment",
+                        "positive_count", "negative_count"]:
+                val = data.get(key)
+                if val is not None:
+                    parts.append(f"  {key.replace('_',' ').title()}: {val}")
+
+        return "\n".join(parts) if parts else "No data available."
     
     def _format_results_for_llm(
         self,

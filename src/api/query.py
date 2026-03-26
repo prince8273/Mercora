@@ -23,6 +23,7 @@ from src.agents.data_qa_agent import DataQAAgent
 from src.schemas.product import ProductResponse
 from src.schemas.review import ReviewResponse
 from src.auth.dependencies import get_current_active_user, get_tenant_id
+from src.config import settings
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -241,31 +242,18 @@ async def execute_query(
                 # For MVP, skip cache and continue to execution
                 pass
         
-        # STEP 2: LLM Reasoning Engine - Query understanding (fallback only)
+        # STEP 2: LLM Reasoning Engine — only used for execution plan generation
+        # Query routing (including LLM fallback for unmatched queries) is handled by QueryRouter
         llm_engine = LLMReasoningEngine(tenant_id=tenant_id)
-        intent, parameters = llm_engine.understand_query(request.query_text)
-        
-        # Use router's agents if it found a deterministic pattern match,
-        # otherwise fall back to LLM agent selection.
-        # The router falls back to all-3-agents when NO pattern matched (deep mode).
-        from src.schemas.orchestration import AgentType as AgentTypeEnum
-        router_agents = routing_decision.required_agents
-        fallback_set = {AgentTypeEnum.PRICING, AgentTypeEnum.SENTIMENT, AgentTypeEnum.DEMAND_FORECAST}
-        is_router_fallback = (
-            set(router_agents) == fallback_set
-            and routing_decision.execution_mode == ExecutionMode.DEEP
-        )
-        router_matched = bool(router_agents) and not is_router_fallback
 
-        if router_matched:
-            required_agents = router_agents
-            logger.info(f"[ORCHESTRATION] Using router agents: {[a.value for a in required_agents]}")
-        else:
-            suggested_agents = llm_engine.select_agents(intent, parameters)
-            required_agents = suggested_agents
-            logger.info(f"[ORCHESTRATION] Using LLM agents: {[a.value for a in required_agents]}, intent={intent}")
-        
-        logger.info(f"[ORCHESTRATION] Query understanding: intent={intent}, parameters={parameters}")
+        # Use router's resolved agents directly
+        required_agents = routing_decision.required_agents
+        logger.info(f"[ORCHESTRATION] Agents resolved by router: {[a.value for a in required_agents]}")
+
+        # Lightweight intent parse for execution plan (no extra LLM call if router matched)
+        from src.orchestration.llm_reasoning_engine import QueryIntent
+        intent = QueryIntent.UNKNOWN
+        parameters: dict = {}
         
         # STEP 3: Create Execution Plan using the resolved required_agents
         execution_mode = routing_decision.execution_mode
@@ -335,16 +323,21 @@ async def execute_query(
             for result in agent_results_list
         }
         
-        # STEP 5: Synthesize Results
-        query_id = str(uuid4())  # Generate unique query ID
+        # STEP 5: Synthesize Results — ENHANCED mode uses Gemini for narrative summaries
+        query_id = str(uuid4())
         execution_metadata = {
             'execution_mode': execution_plan.execution_mode.value,
             'agents_used': [task.agent_type.value for task in execution_plan.tasks],
             'execution_time': execution_plan.estimated_duration.total_seconds(),
             'parallel_execution': len(execution_plan.parallel_groups) > 0
         }
-        
-        result_synthesizer = ResultSynthesizer(tenant_id=tenant_id)
+
+        from src.orchestration.result_synthesizer import SynthesisMode
+        result_synthesizer = ResultSynthesizer(
+            tenant_id=tenant_id,
+            llm_engine=llm_engine,
+            synthesis_mode=SynthesisMode.ENHANCED
+        )
         structured_report = result_synthesizer.synthesize_results(
             query_id=query_id,
             query=request.query_text,
@@ -361,6 +354,18 @@ async def execute_query(
         if token_usage['total_tokens'] > 0:
             logger.info(f"[ORCHESTRATION] Token usage: {token_usage['total_tokens']} tokens, "
                         f"${token_usage['estimated_cost_usd']} cost")
+            # Inject into report metadata so frontend can display it
+            structured_report.agent_results['llm_usage'] = token_usage
+            # Also record in metrics collector
+            from src.observability.metrics import get_metrics_collector
+            get_metrics_collector().record_llm_tokens(
+                tokens=token_usage['total_tokens'],
+                model=settings.openai_model if settings.llm_provider == 'openai' else settings.gemini_model,
+                operation="query_synthesis",
+                prompt_tokens=token_usage.get('prompt_tokens', 0),
+                completion_tokens=token_usage.get('completion_tokens', 0),
+                cost_usd=token_usage.get('estimated_cost_usd', 0.0)
+            )
 
         # Persist query to history
         try:

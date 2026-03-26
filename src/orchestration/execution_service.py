@@ -1182,10 +1182,28 @@ class ExecutionService:
                 }
 
             # ── 0d. BUSINESS HEALTH / OVERVIEW ───────────────────────────────
-            if any(k in q for k in ['business health', 'business overview', 'how is my business',
-                                     'overall performance', 'business summary', 'how am i doing',
-                                     'business doing', 'overall status', 'dashboard summary',
-                                     'give me a summary', 'business report']):
+            # ── 0d. BUSINESS HEALTH / OVERVIEW ───────────────────────────────
+            BUSINESS_HEALTH_KEYWORDS = [
+                'business health', 'business overview', 'how is my business',
+                'overall performance', 'business summary', 'how am i doing',
+                'business doing', 'overall status', 'dashboard summary',
+                'give me a summary', 'business report', 'board',
+                'executive summary', 'board-ready', 'board ready',
+                'quarterly', 'this quarter', 'q1', 'q2', 'q3', 'q4',
+                'summary of the business', 'summary of my business',
+                'how are we doing', 'state of the business',
+                'past six months', 'past 6 months', 'last six months',
+                'last 6 months', 'past three months', 'last three months',
+                'past month', 'last month', 'year to date', 'ytd',
+                'month summary', 'week summary', 'annual summary',
+                'performance summary', 'health report', 'status report',
+                'investor', 'stakeholder', 'management report',
+            ]
+            # Also catch "summary" + any time word as a business overview request
+            TIME_WORDS = ['month', 'quarter', 'year', 'week', 'period', 'six', 'three', 'annual']
+            is_timed_summary = ('summary' in q or 'report' in q) and any(t in q for t in TIME_WORDS)
+
+            if any(k in q for k in BUSINESS_HEALTH_KEYWORDS) or is_timed_summary:
                 # Revenue
                 rev_r = await db.execute(
                     select(
@@ -1879,11 +1897,25 @@ class ExecutionService:
 
             # ── 7. PRODUCT DETAIL / SPECIFIC PRODUCT ─────────────────────────
             # e.g. "tell me about yoga mat", "what is the price of kettle"
-            # Extract potential product name keywords (nouns after stop words)
+            # Only trigger if the query explicitly asks about a specific product/item
+            PRODUCT_SEARCH_TRIGGERS = [
+                'tell me about', 'what is', 'show me', 'find product', 'search for',
+                'details of', 'info on', 'information about', 'product called',
+                'item called', 'sku', 'product named',
+            ]
+            is_product_search = any(t in q for t in PRODUCT_SEARCH_TRIGGERS)
+            # Also block business/summary queries from falling into product search
+            BUSINESS_QUERY_SIGNALS = [
+                'summary', 'overview', 'report', 'quarter', 'board', 'executive',
+                'business', 'performance', 'health', 'status', 'dashboard',
+                'investor', 'stakeholder', 'month', 'annual', 'year to date',
+            ]
+            is_business_query = any(t in q for t in BUSINESS_QUERY_SIGNALS)
+
             stop_words = {'what', 'is', 'the', 'of', 'for', 'me', 'about', 'show',
                           'tell', 'give', 'get', 'find', 'a', 'an', 'my', 'our', 'i', 'how'}
             words = [w for w in re.findall(r'\b[a-z]+\b', q) if w not in stop_words and len(w) > 2]
-            if words:
+            if words and is_product_search and not is_business_query:
                 # Try to find products matching any of the keywords
                 keyword_filters = [Product.tenant_id == tenant_id]
                 name_conditions = [func.lower(Product.name).contains(w) for w in words[:4]]

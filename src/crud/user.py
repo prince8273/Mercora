@@ -29,27 +29,17 @@ async def get_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[User]:
 async def create_user(
     db: AsyncSession,
     email: str,
-    password: str,
+    password: Optional[str],
     tenant_id: UUID,
     full_name: Optional[str] = None,
-    is_superuser: bool = False
+    is_superuser: bool = False,
+    oauth_provider: Optional[str] = None
 ) -> User:
     """
-    Create a new user
-    
-    Args:
-        db: Database session
-        email: User email
-        password: Plain text password (will be hashed)
-        tenant_id: Tenant UUID
-        full_name: Optional full name
-        is_superuser: Whether user is a superuser
-    
-    Returns:
-        Created User object
+    Create a new user. Password is optional for OAuth users.
     """
-    hashed_password = get_password_hash(password)
-    
+    hashed_password = get_password_hash(password) if password else ""
+
     user = User(
         email=email,
         hashed_password=hashed_password,

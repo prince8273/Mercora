@@ -2,6 +2,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
 
 from src.database import get_db
 from src.schemas.auth import (
@@ -28,6 +29,102 @@ from src.models.user import User
 from src.config import settings
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
+
+class GoogleAuthRequest(BaseModel):
+    token: str
+    token_type: str = "access_token"  # "access_token" or "id_token"
+
+
+@router.post("/google", response_model=Token, summary="Login or register via Google OAuth")
+async def google_auth(
+    payload: GoogleAuthRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verify a Google token and login or auto-register the user.
+    Supports both access_token (from popup flow) and id_token flows.
+    """
+    import httpx
+
+    email = None
+    full_name = ""
+
+    if payload.token_type == "access_token":
+        # Fetch user info using the access token
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {payload.token}"}
+            )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
+        info = resp.json()
+        email = info.get("email")
+        full_name = info.get("name", "")
+    else:
+        # Verify ID token
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        try:
+            info = google_id_token.verify_oauth2_token(
+                payload.token,
+                google_requests.Request(),
+                settings.google_client_id
+            )
+            email = info.get("email")
+            full_name = info.get("name", "")
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
+
+    if not email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google token missing email")
+
+    # Find or create user
+    user = await get_user_by_email(db, email)
+
+    if not user:
+        import re
+        base_slug = re.sub(r'[^a-z0-9]', '-', email.split('@')[0].lower())[:30]
+        slug = base_slug
+        counter = 1
+        while await get_tenant_by_slug(db, slug):
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        tenant = await create_tenant(
+            db,
+            name=full_name or email.split('@')[0],
+            slug=slug,
+            contact_email=email,
+            plan="free"
+        )
+        user = await create_user(
+            db,
+            email=email,
+            password=None,
+            tenant_id=tenant.id,
+            full_name=full_name,
+            is_superuser=False,
+            oauth_provider="google"
+        )
+
+    await update_last_login(db, user.id)
+    await db.commit()
+
+    role = "superuser" if user.is_superuser else "admin"
+    access_token = create_access_token(
+        user_id=user.id,
+        tenant_id=user.tenant_id,
+        role=role,
+        expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
+    )
+
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        expires_in=settings.access_token_expire_minutes * 60
+    )
 
 
 @router.post(

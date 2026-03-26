@@ -59,7 +59,17 @@ export const authService = {
   },
 
   /**
-   * Logout user
+   * Login with Google ID token
+   */
+  async googleLogin(token, tokenType = 'access_token') {
+    const response = await apiClient.post('/api/v1/auth/google', {
+      token,
+      token_type: tokenType,
+    })
+    return response
+  },
+
+  /**
    */
   async logout() {
     // Clear local storage

@@ -70,6 +70,8 @@ async def get_cached(key: str) -> Optional[Any]:
         
         if cached_json is None:
             logger.info(f"❌ Cache MISS: {key}")
+            from src.observability.metrics import get_metrics_collector
+            get_metrics_collector().record_cache_miss()
             return None
         
         # Parse JSON
@@ -77,6 +79,8 @@ async def get_cached(key: str) -> Optional[Any]:
         cached_data = json.loads(cached_json)
         
         logger.info(f"✅ Cache HIT: {key}")
+        from src.observability.metrics import get_metrics_collector
+        get_metrics_collector().record_cache_hit()
         return cached_data
     
     except Exception as e:

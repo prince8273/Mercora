@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     # Redis Cache Configuration
     redis_url: str = "redis://localhost:6379/0"
     cache_enabled: bool = True
+
+    # Google OAuth
+    google_client_id: str | None = None
     
     model_config = SettingsConfigDict(
         env_file=".env",

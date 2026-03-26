@@ -90,7 +90,7 @@ class LLMReasoningEngine:
     
     def __init__(self, tenant_id: UUID):
         """
-        Initialize LLM Reasoning Engine
+        Initialize LLM Reasoning Engine (lazy — client is created on first use).
         
         Args:
             tenant_id: Tenant UUID for multi-tenancy isolation
@@ -98,14 +98,8 @@ class LLMReasoningEngine:
         self.tenant_id = tenant_id
         self.token_usage = TokenUsage()
         self.prompt_cache: Dict[str, Any] = {}
-        
-        # Initialize LLM client based on provider
-        if settings.llm_provider == "openai":
-            self._init_openai()
-        elif settings.llm_provider == "gemini":
-            self._init_gemini()
-        else:
-            raise ValueError(f"Unsupported LLM provider: {settings.llm_provider}")
+        self.client = None   # lazy-initialised on first _call_llm
+        self.model = None
     
     def _init_openai(self):
         """Initialize OpenAI client"""
@@ -128,17 +122,16 @@ class LLMReasoningEngine:
     def _init_gemini(self):
         """Initialize Google Gemini client"""
         try:
-            import google.generativeai as genai
-            
+            from google import genai
+
             if not settings.gemini_api_key:
                 raise ValueError("Gemini API key is not configured. Please set GEMINI_API_KEY in .env file.")
-            
-            genai.configure(api_key=settings.gemini_api_key)
-            self.client = genai.GenerativeModel(settings.gemini_model)
+
+            self.client = genai.Client(api_key=settings.gemini_api_key)
             self.model = settings.gemini_model
             logger.info(f"Initialized Gemini client with model: {self.model}")
         except ImportError:
-            logger.error("Google Generative AI package not installed. Install with: pip install google-generativeai")
+            logger.error("google-genai package not installed. Install with: pip install google-genai")
             raise
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
@@ -342,6 +335,88 @@ class LLMReasoningEngine:
         except Exception as e:
             logger.error(f"Summary generation failed: {e}")
             raise
+
+    def generate_narrative_summary(
+        self,
+        query: str,
+        data_summary: str,
+        overall_confidence: float
+    ) -> str:
+        """
+        Generate a rich, narrative executive summary for a business query.
+
+        Uses the LLM to produce a human-readable story rather than bullet points.
+        Falls back to None on failure so the caller can use rule-based fallback.
+
+        Args:
+            query: The original user question
+            data_summary: Pre-formatted string of key findings / metrics
+            overall_confidence: 0-1 confidence score
+
+        Returns:
+            Narrative summary string, or None if LLM call fails
+        """
+        system_prompt = (
+            "You are a senior e-commerce business analyst writing for an Indian marketplace seller. "
+            "Write a concise, narrative executive summary (3-5 sentences) that directly answers the "
+            "user's question. Use ₹ for currency. Be specific — include actual numbers from the data. "
+            "Do NOT use bullet points or headers. Write in plain prose. "
+            "Highlight the single most important insight first."
+        )
+        user_prompt = (
+            f"User question: {query}\n\n"
+            f"Data findings:\n{data_summary}\n\n"
+            f"Overall confidence: {overall_confidence:.0%}\n\n"
+            "Write the executive summary now:"
+        )
+        try:
+            return self._call_llm(system_prompt, user_prompt)
+        except Exception as e:
+            logger.warning(f"Narrative summary generation failed: {e}")
+            return None
+
+    def cross_data_reasoning(
+        self,
+        query: str,
+        agent_summaries: Dict[str, str]
+    ) -> Optional[str]:
+        """
+        Reason across multiple data sources to answer complex 'why' questions.
+
+        E.g. "why did sales drop when reviews improved?" requires correlating
+        sentiment data with sales data — something rule-based logic can't do.
+
+        Args:
+            query: The original user question
+            agent_summaries: Dict of agent_name -> summary string
+
+        Returns:
+            Cross-data insight string, or None if not applicable / LLM fails
+        """
+        if len(agent_summaries) < 2:
+            return None  # Only useful when multiple data sources are present
+
+        sources_text = "\n\n".join(
+            f"[{name.upper()} DATA]\n{summary}"
+            for name, summary in agent_summaries.items()
+        )
+        system_prompt = (
+            "You are a senior e-commerce analyst. You have data from multiple sources about the same business. "
+            "Your job is to find correlations, contradictions, and causal relationships between the data sources. "
+            "Answer the user's question by reasoning ACROSS all the data. "
+            "Be specific, use numbers, and explain the 'why'. "
+            "Keep it to 3-4 sentences. Use ₹ for currency. Write in plain prose."
+        )
+        user_prompt = (
+            f"User question: {query}\n\n"
+            f"{sources_text}\n\n"
+            "What cross-data insight can you provide?"
+        )
+        try:
+            return self._call_llm(system_prompt, user_prompt)
+        except Exception as e:
+            logger.warning(f"Cross-data reasoning failed: {e}")
+            return None
     
     # Private helper methods
     
@@ -399,8 +474,20 @@ Respond in JSON format:
         prompt += "Analyze this query and respond in JSON format."
         return prompt
     
+    def _ensure_client(self):
+        """Lazy-initialise the LLM client on first use."""
+        if self.client is not None:
+            return
+        if settings.llm_provider == "openai":
+            self._init_openai()
+        elif settings.llm_provider == "gemini":
+            self._init_gemini()
+        else:
+            raise ValueError(f"Unsupported LLM provider: {settings.llm_provider}")
+
     def _call_llm(self, system_prompt: str, user_prompt: str) -> str:
         """Call LLM API and track token usage"""
+        self._ensure_client()
         if settings.llm_provider == "openai":
             return self._call_openai(system_prompt, user_prompt)
         elif settings.llm_provider == "gemini":
@@ -435,23 +522,18 @@ Respond in JSON format:
             raise
     
     def _call_gemini(self, system_prompt: str, user_prompt: str) -> str:
-        """Call Google Gemini API"""
+        """Call Google Gemini API (google-genai SDK)"""
         try:
-            # Combine prompts for Gemini
             combined_prompt = f"{system_prompt}\n\n{user_prompt}"
-            
-            response = self.client.generate_content(combined_prompt)
-            
-            # Gemini doesn't provide token counts in the same way
-            # Estimate based on text length
-            estimated_tokens = len(combined_prompt.split()) + len(response.text.split())
-            self.token_usage.add_usage(
-                estimated_tokens // 2,
-                estimated_tokens // 2
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=combined_prompt
             )
-            
-            return response.text
-        
+            text = response.text
+            # Estimate tokens from text length
+            estimated_tokens = len(combined_prompt.split()) + len(text.split())
+            self.token_usage.add_usage(estimated_tokens // 2, estimated_tokens // 2)
+            return text
         except Exception as e:
             logger.error(f"Gemini API call failed: {e}")
             raise
