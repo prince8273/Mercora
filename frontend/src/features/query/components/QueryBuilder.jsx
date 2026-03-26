@@ -58,7 +58,7 @@ export const QueryBuilder = ({
         <textarea
           ref={textareaRef}
           className={styles.textarea}
-          placeholder="Ask a question about your data, e.g. 'Which products have the most positive reviews?'"
+          placeholder="e.g. Why are my sales dropping? What's my best performing category?"
           value={value}
           onChange={(e) => setValue(e.target.value.slice(0, MAX))}
           onKeyDown={handleKey}

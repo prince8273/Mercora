@@ -1,33 +1,35 @@
 .card {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
+  border: none;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 .prompt {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #6b7280;
-  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 14px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .chip {
-  padding: 6px 14px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  padding: 7px 16px;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
   border-radius: 999px;
   font-size: 0.8rem;
-  color: #374151;
+  font-weight: 700;
+  color: #111827;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -38,22 +40,22 @@
   color: #fff;
 }
 
-/* Pill container — relative so button can be pinned */
+/* Pill container */
 .pill {
   position: relative;
   background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  border: 2px solid #d1d5db;
   border-radius: 12px;
-  padding: 12px 52px 36px 14px;
-  transition: border-color 0.15s, background 0.15s;
+  padding: 14px 56px 38px 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .pill:focus-within {
-  border-color: #9ca3af;
+  border-color: #111827;
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(17,24,39,0.08);
 }
 
-/* Auto-growing textarea, capped at ~6 lines */
 .textarea {
   width: 100%;
   background: transparent;
@@ -61,7 +63,8 @@
   outline: none;
   resize: none;
   overflow: hidden;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: #111827;
   font-family: inherit;
   line-height: 1.6;
@@ -71,10 +74,9 @@
   box-sizing: border-box;
 }
 
-.textarea::placeholder { color: #9ca3af; }
+.textarea::placeholder { color: #9ca3af; font-weight: 400; }
 .textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Send button — always pinned bottom-right */
 .sendBtn {
   position: absolute;
   bottom: 10px;
@@ -82,10 +84,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
-  border: 1.5px solid #d1d5db;
+  border: 2px solid #d1d5db;
   background: #f3f4f6;
   color: #9ca3af;
   cursor: pointer;
@@ -95,7 +97,6 @@
 
 .sendBtn:disabled { cursor: default; }
 
-/* Active state — dark fill, white icon, forced with !important */
 .sendActive {
   background: #111827 !important;
   border-color: #111827 !important;
@@ -109,11 +110,10 @@
 
 .sendActive:hover { opacity: 0.85; }
 
-/* Counter — bottom-left of pill */
 .counter {
   position: absolute;
-  bottom: 10px;
-  left: 14px;
+  bottom: 12px;
+  left: 16px;
   font-size: 0.68rem;
   color: #9ca3af;
   font-variant-numeric: tabular-nums;

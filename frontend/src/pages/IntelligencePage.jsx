@@ -279,32 +279,79 @@ export default function IntelligencePage() {
         {/* Empty State */}
         {!currentQueryId && !queryResults && (
           <div className={styles.emptyState}>
-            <svg
-              className={styles.emptyIcon}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
-            <h3 className={styles.emptyTitle}>Ask a Question</h3>
-            <p className={styles.emptyText}>
-              Use natural language to query your Amazon seller data and get AI-powered insights.
-            </p>
-            <div className={styles.exampleQueries}>
-              <p className={styles.examplesLabel}>Try asking:</p>
-              <ul className={styles.examplesList}>
-                <li>"What are my top-selling products this month?"</li>
-                <li>"Show me products with declining sales"</li>
-                <li>"Which categories have the highest profit margins?"</li>
-                <li>"Analyze my inventory turnover rate"</li>
-              </ul>
+            <div className={styles.emptyIconWrap}>
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.emptyIcon}>
+                <defs>
+                  <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#e0e7ff" stopOpacity="0.9"/>
+                    <stop offset="100%" stopColor="#f5f3ff" stopOpacity="0.2"/>
+                  </radialGradient>
+                  <linearGradient id="ringGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#6366f1"/>
+                    <stop offset="100%" stopColor="#a78bfa"/>
+                  </linearGradient>
+                  <linearGradient id="coreGrad" x1="40" y1="40" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#4f46e5"/>
+                    <stop offset="100%" stopColor="#7c3aed"/>
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+
+                {/* Soft background circle */}
+                <circle cx="60" cy="60" r="54" fill="url(#bgGlow)"/>
+
+                {/* Outer dashed orbit ring */}
+                <circle cx="60" cy="60" r="48" stroke="url(#ringGrad)" strokeWidth="1" strokeDasharray="4 5" opacity="0.4"/>
+
+                {/* Mid ring */}
+                <circle cx="60" cy="60" r="34" stroke="url(#ringGrad)" strokeWidth="1" strokeDasharray="3 6" opacity="0.25"/>
+
+                {/* Orbit dots */}
+                <circle cx="60" cy="12" r="4" fill="#6366f1" opacity="0.85" filter="url(#glow)"/>
+                <circle cx="108" cy="60" r="3.5" fill="#8b5cf6" opacity="0.75" filter="url(#glow)"/>
+                <circle cx="60" cy="108" r="4" fill="#6366f1" opacity="0.85" filter="url(#glow)"/>
+                <circle cx="12" cy="60" r="3.5" fill="#8b5cf6" opacity="0.75" filter="url(#glow)"/>
+
+                {/* Diagonal orbit dots */}
+                <circle cx="98" cy="22" r="3" fill="#a78bfa" opacity="0.6"/>
+                <circle cx="22" cy="98" r="3" fill="#a78bfa" opacity="0.6"/>
+                <circle cx="22" cy="22" r="2.5" fill="#c4b5fd" opacity="0.5"/>
+                <circle cx="98" cy="98" r="2.5" fill="#c4b5fd" opacity="0.5"/>
+
+                {/* Connector lines from core to orbit dots */}
+                <line x1="60" y1="42" x2="60" y2="16" stroke="#6366f1" strokeWidth="1" opacity="0.3"/>
+                <line x1="60" y1="78" x2="60" y2="104" stroke="#6366f1" strokeWidth="1" opacity="0.3"/>
+                <line x1="42" y1="60" x2="16" y2="60" stroke="#8b5cf6" strokeWidth="1" opacity="0.3"/>
+                <line x1="78" y1="60" x2="104" y2="60" stroke="#8b5cf6" strokeWidth="1" opacity="0.3"/>
+
+                {/* Core circle */}
+                <circle cx="60" cy="60" r="22" fill="url(#coreGrad)" filter="url(#glow)" opacity="0.95"/>
+
+                {/* Inner icon — lightning bolt (AI/speed) */}
+                <path d="M64 44 L54 62 L61 62 L56 76 L68 56 L61 56 Z"
+                  fill="white" opacity="0.95"/>
+
+                {/* Sparkle top-right */}
+                <path d="M88 26 L90 20 L92 26 L90 32 Z" fill="#fbbf24" opacity="0.9"/>
+                <path d="M84 22 L90 20 L96 22 L90 24 Z" fill="#fbbf24" opacity="0.9"/>
+
+                {/* Sparkle bottom-left */}
+                <path d="M28 82 L29.5 78 L31 82 L29.5 86 Z" fill="#fbbf24" opacity="0.6"/>
+
+                {/* Tiny dot accents */}
+                <circle cx="76" cy="18" r="2" fill="#c4b5fd" opacity="0.7"/>
+                <circle cx="44" cy="96" r="1.5" fill="#c4b5fd" opacity="0.5"/>
+              </svg>
+              <div className={styles.emptyIconPulse}/>
             </div>
+
+            <h3 className={styles.emptyTitle}>Ask Anything About Your Business</h3>
+            <p className={styles.emptyText}>
+              Your data, your insights — just ask.
+            </p>
           </div>
         )}
       </div>
