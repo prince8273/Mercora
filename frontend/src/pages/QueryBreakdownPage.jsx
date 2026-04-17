@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../components/molecules/PageHeader';
 import styles from './QueryBreakdownPage.module.css';
@@ -85,9 +85,8 @@ function InsightTable({ insight }) {
                 const isOpen = expandedRow === di;
                 const colSpan = (hideNameCol ? 1 : 2) + (d.metrics?.length || 0) + (hasExtra ? 1 : 0);
                 return (
-                  <>
+                  <React.Fragment key={di}>
                     <tr
-                      key={di}
                       className={hasExtra ? styles.clickableRow : ''}
                       onClick={hasExtra ? () => toggle(di) : undefined}
                       title={hasExtra ? 'Click to see details' : undefined}
@@ -143,7 +142,7 @@ function InsightTable({ insight }) {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 );
               })}
             </tbody>

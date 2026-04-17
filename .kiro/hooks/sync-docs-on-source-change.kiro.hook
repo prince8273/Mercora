@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "name": "Sync Docs on Source Change",
+  "description": "Watches Python backend source files, TypeScript/JS frontend files, and config files. When any of these change, asks the agent to update the relevant docs in /docs or README.md to reflect the changes.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.py",
+      "scripts/**/*.py",
+      "frontend/src/**/*.ts",
+      "frontend/src/**/*.tsx",
+      "frontend/src/**/*.js",
+      "frontend/src/**/*.jsx",
+      "config/**/*.py",
+      "*.py",
+      "alembic/**/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file was just edited. Review the changes and update the documentation accordingly. If the change affects an area covered by a file in the /docs folder (such as docs/API_DOCUMENTATION.md, docs/ARCHITECTURE.md, docs/USER_GUIDE.md, docs/SECURITY_CONFIGURATION.md, or docs/COMPLEX_QUERIES.md), update the relevant doc(s) there. Also update the root README.md if the change affects high-level usage, setup, or feature descriptions. Only update docs that are actually affected by the change — don't make unnecessary edits."
+  }
+}

@@ -772,10 +772,12 @@ class ResultSynthesizer:
             elif agent_type == AgentType.SENTIMENT:
                 sentiment_score = data.get("aggregate_sentiment_score") if isinstance(data, dict) else None
                 if sentiment_score is not None:
+                    # Convert -1..1 scale to 0..100 percentage for display
+                    sentiment_pct = round((float(sentiment_score) + 1) / 2 * 100, 1)
                     metrics.append(MetricWithTrend(
-                        name="Customer Sentiment Score",
-                        value=round(sentiment_score, 2),
-                        unit="score",
+                        name="Customer Sentiment",
+                        value=sentiment_pct,
+                        unit="%",
                         trend=TrendDirection.STABLE,
                         confidence=result.get("confidence", 0.8)
                     ))

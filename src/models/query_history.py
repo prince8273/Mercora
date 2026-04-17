@@ -21,7 +21,7 @@ class QueryHistory(Base):
     agents_executed = Column(JSON, nullable=False, default=list)
 
     # Result summary
-    overall_confidence = Column(Numeric(5, 4), nullable=True)
+    overall_confidence = Column(Numeric(6, 2), nullable=True)  # 0.00 - 100.00
     execution_time_seconds = Column(Numeric(8, 2), nullable=True)
     status = Column(String(20), nullable=False, default="success")  # success / failure
     error_message = Column(String, nullable=True)

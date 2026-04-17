@@ -61,6 +61,17 @@ async def lifespan(app: FastAPI):
     # Initialize cache manager if enabled
     cache_manager = None
     if settings.cache_enabled:
+        # Try to start Redis via WSL if not already running
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["wsl", "sudo", "service", "redis-server", "start"],
+                capture_output=True, timeout=8
+            )
+            logger.info("Redis start via WSL: " + (result.stdout.decode().strip() or "ok"))
+        except Exception as e:
+            logger.debug(f"WSL Redis start skipped: {e}")
+
         try:
             cache_manager = CacheManager(
                 redis_url=settings.redis_url,

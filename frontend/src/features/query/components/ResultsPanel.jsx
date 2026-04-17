@@ -32,15 +32,13 @@ export const ResultsPanel = ({ results = null, onExport, onShare, onExplore, cla
 
   const productCount = results.insights?.length ?? 0;
 
-  // Pull sentiment threshold from metrics if available, fallback to a readable label
+  // Pull sentiment metric from key_metrics if available
   const sentimentMetric = results.metrics?.find(
     (m) => m.name?.toLowerCase().includes('sentiment') || m.key?.toLowerCase().includes('sentiment')
   );
-  const sentimentThreshold = sentimentMetric
+  const sentimentDisplay = sentimentMetric
     ? `${sentimentMetric.value}${sentimentMetric.unit || ''}`
-    : results.summary?.text?.match(/(\d+)%\s*(?:positive\s*)?sentiment/i)?.[1]
-      ? `>${results.summary.text.match(/(\d+)%\s*(?:positive\s*)?sentiment/i)[1]}%`
-      : null;
+    : null;
 
   return (
     <div className={`${styles.container} ${className}`}>
@@ -80,10 +78,10 @@ export const ResultsPanel = ({ results = null, onExport, onShare, onExplore, cla
           <span className={styles.metricValue}>{productCount}</span>
           <span className={styles.metricLabel}>Products found</span>
         </div>
-        {sentimentThreshold && (
+        {sentimentDisplay && (
           <div className={styles.metricCard}>
-            <span className={styles.metricValue}>{sentimentThreshold}</span>
-            <span className={styles.metricLabel}>Sentiment threshold</span>
+            <span className={styles.metricValue}>{sentimentDisplay}</span>
+            <span className={styles.metricLabel}>Customer sentiment</span>
           </div>
         )}
       </div>

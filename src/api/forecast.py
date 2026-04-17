@@ -214,6 +214,12 @@ async def get_product_forecast(
             current_inventory=product.inventory_level
         )
         result = forecast_result.to_dict()
+        # Attach historical sales so the frontend chart can show actual vs forecast
+        result["historical_sales"] = [
+            {"date": r["date"].isoformat() if hasattr(r["date"], "isoformat") else str(r["date"]),
+             "quantity": r["quantity"]}
+            for r in sales_history[-90:]  # last 90 days max
+        ]
         # Cache for 1 hour — forecasts are expensive to compute
         if cache:
             await cache.set(key=cache_key, value=result, ttl=3600)

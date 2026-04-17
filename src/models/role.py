@@ -40,12 +40,13 @@ class GUID(TypeDecorator):
     def process_result_value(self, value, dialect):
         if value is None:
             return value
-        else:
-            if not isinstance(value, uuid4.__class__):
-                from uuid import UUID
-                return UUID(value)
-            else:
-                return value
+        from uuid import UUID
+        if isinstance(value, UUID):
+            return value
+        try:
+            return UUID(str(value))
+        except Exception:
+            return value
 
 
 class RoleType(str, Enum):

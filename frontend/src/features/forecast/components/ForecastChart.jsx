@@ -16,18 +16,8 @@ import styles from './ForecastChart.module.css';
 
 export default function ForecastChart({ data, isLoading, horizon, onHorizonChange }) {
   const chartData = useMemo(() => {
-    if (!data?.historical || !data?.forecast) return [];
-
-    const historical = data.historical.map((item) => ({
-      ...item,
-      type: 'historical',
-    }));
-
-    const forecast = data.forecast.map((item) => ({
-      ...item,
-      type: 'forecast',
-    }));
-
+    const historical = (data?.historical || []).map((item) => ({ ...item, type: 'historical' }));
+    const forecast = (data?.forecast || []).map((item) => ({ ...item, type: 'forecast' }));
     return [...historical, ...forecast];
   }, [data]);
 
@@ -42,8 +32,10 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
   }, [data]);
 
   const formatValue = (value) => {
+    if (value == null || isNaN(value)) return '—';
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    if (value < 10) return value.toFixed(1);  // show decimals for small quantities
     return value.toFixed(0);
   };
 
@@ -90,6 +82,7 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
   };
 
   if (!data || !chartData.length) {
+    const noHistory = data && data.forecast?.length === 0;
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -97,7 +90,12 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
         </div>
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📈</div>
-          <p>No forecast data available</p>
+          <p>{noHistory ? 'No sales history found for this product' : 'No forecast data available'}</p>
+          {noHistory && (
+            <p style={{ fontSize: '13px', marginTop: '6px', opacity: 0.6 }}>
+              Minimum 14 days of sales data required to generate a forecast
+            </p>
+          )}
         </div>
       </div>
     );
@@ -139,9 +137,12 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
               <XAxis dataKey="date" />
               <YAxis tickFormatter={formatValue} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend formatter={(value) => {
+                if (value === 'confidenceLower' || value === 'confidenceUpper') return null;
+                return value;
+              }} />
 
-              {/* Confidence band */}
+              {/* Confidence band — hidden from legend */}
               <Area
                 type="monotone"
                 dataKey="confidenceUpper"
@@ -149,6 +150,7 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
                 fill="#10b981"
                 fillOpacity={0.1}
                 name="Confidence Band"
+                legendType="none"
               />
               <Area
                 type="monotone"
@@ -156,6 +158,7 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
                 stroke="none"
                 fill="#10b981"
                 fillOpacity={0.1}
+                legendType="none"
               />
 
               {/* Historical data */}
@@ -213,29 +216,35 @@ export default function ForecastChart({ data, isLoading, horizon, onHorizonChang
 
       {stats && (
         <div className={styles.stats}>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>Avg Historical Demand</div>
-            <div className={styles.statValue}>{formatValue(stats.avgHistorical)}</div>
-          </div>
+          {stats.avgHistorical != null && (
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>Avg Historical Demand</div>
+              <div className={styles.statValue}>{formatValue(stats.avgHistorical)}</div>
+            </div>
+          )}
           <div className={styles.statCard}>
             <div className={styles.statLabel}>Avg Forecast Demand</div>
             <div className={styles.statValue}>{formatValue(stats.avgForecast)}</div>
-            <div
-              className={`${styles.statChange} ${
-                stats.change >= 0 ? styles.positive : styles.negative
-              }`}
-            >
-              {stats.change >= 0 ? '↑' : '↓'} {Math.abs(stats.change).toFixed(1)}%
-            </div>
+            {stats.change != null && (
+              <div
+                className={`${styles.statChange} ${
+                  stats.change >= 0 ? styles.positive : styles.negative
+                }`}
+              >
+                {stats.change >= 0 ? '↑' : '↓'} {Math.abs(stats.change).toFixed(1)}%
+              </div>
+            )}
           </div>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>Peak Demand</div>
             <div className={styles.statValue}>{formatValue(stats.peakDemand)}</div>
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>Confidence Level</div>
-            <div className={styles.statValue}>{stats.confidence}%</div>
-          </div>
+          {stats.confidence != null && (
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>Confidence Level</div>
+              <div className={styles.statValue}>{stats.confidence}%</div>
+            </div>
+          )}
         </div>
       )}
     </div>

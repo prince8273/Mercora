@@ -99,14 +99,16 @@ export default function InventoryAlerts({ data, isLoading, onDismiss, onTakeActi
       </div>
 
       <div className={styles.alertsList}>
-        {filteredAlerts.map((alert) => (
-          <div key={alert.id} className={`${styles.alertCard} ${styles[alert.priority]}`}>
+        {filteredAlerts.map((alert) => {
+          const priority = alert.priority ?? 'info';
+          return (
+          <div key={alert.id} className={`${styles.alertCard} ${styles[priority]}`}>
             <div className={styles.alertHeader}>
               <h3 className={styles.alertTitle}>
-                {getPriorityIcon(alert.priority)} {alert.title}
+                {getPriorityIcon(priority)} {alert.title}
               </h3>
-              <span className={`${styles.alertPriority} ${styles[alert.priority]}`}>
-                {alert.priority.toUpperCase()}
+              <span className={`${styles.alertPriority} ${styles[priority]}`}>
+                {priority.toUpperCase()}
               </span>
             </div>
 
@@ -149,7 +151,8 @@ export default function InventoryAlerts({ data, isLoading, onDismiss, onTakeActi
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -4,10 +4,14 @@ from sqlalchemy.orm import declarative_base
 from src.config import settings
 
 # Create async engine
+_is_postgres = settings.database_url.startswith("postgresql")
+
 engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,
-    future=True
+    future=True,
+    # Supabase transaction pooler (pgbouncer) requires prepared statements disabled
+    connect_args={"statement_cache_size": 0} if _is_postgres else {},
 )
 
 # Create session factory

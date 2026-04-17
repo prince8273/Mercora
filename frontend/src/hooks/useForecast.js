@@ -10,7 +10,7 @@ export const useDemandForecast = (productId, horizon = '30d') => {
     queryKey: queryKeys.forecast.demand(productId, horizon),
     queryFn: () => forecastService.getDemandForecast(productId, horizon),
     enabled: !!productId,
-    staleTime: 600000, // 10 minutes
+    staleTime: 0, // always refetch — forecast data changes with backend fixes
   });
 };
 

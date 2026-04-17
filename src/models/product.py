@@ -28,20 +28,19 @@ class GUID(TypeDecorator):
         elif dialect.name == 'postgresql':
             return value
         else:
-            if not isinstance(value, uuid4.__class__):
-                return str(value)
-            else:
-                return str(value)
+            return str(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return value
-        else:
-            if not isinstance(value, uuid4.__class__):
-                from uuid import UUID
-                return UUID(value)
-            else:
-                return value
+        from uuid import UUID
+        if isinstance(value, UUID):
+            return value
+        # Handle asyncpg native UUID type
+        try:
+            return UUID(str(value))
+        except Exception:
+            return value
 
 
 class Product(Base):
