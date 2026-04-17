@@ -1,0 +1,127 @@
+/**
+ * page-theme.css — shared editorial theme for all dashboard pages (trial)
+ * Import this in any page module CSS to get the cream/ink palette + font overrides.
+ */
+
+:root {
+  --pt-cream:   #f5f0e8;
+  --pt-ink:     #0e0e0e;
+  --pt-muted:   #7a7060;
+  --pt-border:  #d8d0c0;
+  --pt-coral:   #e8432d;
+  --pt-amber:   #e8a020;
+  --pt-green:   #1a9e5e;
+  --pt-surface: #ede8df;
+  --pt-white:   #fdfaf5;
+}
+
+/* Page wrapper — apply .pt-page to the root div of any page */
+.pt-page {
+  font-family: 'Syne', var(--font-sans);
+  background: var(--pt-cream);
+  color: var(--pt-ink);
+  min-height: 100%;
+}
+
+/* Headings inside .pt-page */
+.pt-page h1,
+.pt-page h2 {
+  font-family: 'Playfair Display', var(--font-serif);
+  letter-spacing: -0.4px;
+}
+
+/* Cards */
+.pt-card {
+  background: var(--pt-white);
+  border: 1px solid var(--pt-border);
+  border-radius: 14px;
+}
+
+/* Page header bar */
+.pt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 58px;
+  border-bottom: 1px solid var(--pt-border);
+  background: var(--pt-white);
+}
+
+.pt-header h1 {
+  font-family: 'Playfair Display', var(--font-serif);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.pt-subtitle {
+  font-size: 11px;
+  color: var(--pt-muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Refresh / action button */
+.pt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--pt-border);
+  background: transparent;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--pt-ink);
+  transition: all 0.18s;
+  letter-spacing: 0.3px;
+}
+.pt-btn:hover {
+  background: var(--pt-ink);
+  color: var(--pt-cream);
+  border-color: var(--pt-ink);
+}
+
+/* Section label */
+.pt-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--pt-muted);
+  margin-bottom: 14px;
+}
+
+/* Empty state */
+.pt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  text-align: center;
+  background: var(--pt-white);
+  border: 1px solid var(--pt-border);
+  border-radius: 14px;
+}
+.pt-empty h2 {
+  font-family: 'Playfair Display', var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.pt-empty p {
+  font-size: 13px;
+  color: var(--pt-muted);
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+/* Scrollbar */
+.pt-page ::-webkit-scrollbar { width: 5px; }
+.pt-page ::-webkit-scrollbar-track { background: var(--pt-cream); }
+.pt-page ::-webkit-scrollbar-thumb { background: var(--pt-border); border-radius: 10px; }

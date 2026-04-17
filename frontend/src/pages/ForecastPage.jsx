@@ -12,7 +12,7 @@ import ContactSupportModal from '../components/modals/ContactSupportModal';
 import styles from './ForecastPage.module.css';
 
 export default function ForecastPage() {
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [horizon, setHorizon] = useState('30d');
   const [timeRange, setTimeRange] = useState('30d');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -22,12 +22,12 @@ export default function ForecastPage() {
   const products = productsData || [];
 
   const { data: forecastData, isLoading: forecastLoading } = useDemandForecast(
-    selectedProduct,
+    selectedProductId,
     { horizon }
   );
 
   const { data: inventoryData, isLoading: inventoryLoading } = useInventoryRecommendations(
-    selectedProduct
+    selectedProductId
   );
 
   const handleDismissAlert = (alertId) => {
@@ -54,15 +54,15 @@ export default function ForecastPage() {
         <div className={styles.productSelector}>
           <ProductSelector
             products={products}
-            value={selectedProduct}
-            onChange={setSelectedProduct}
+            selected={selectedProductId ? [selectedProductId] : []}
+            onChange={(ids) => setSelectedProductId(ids.length > 0 ? ids[0] : null)}
             placeholder="Select a product..."
             loading={productsLoading}
           />
         </div>
       </div>
 
-      {!selectedProduct ? (
+      {!selectedProductId ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🔮</div>
           <h2>Select a Product</h2>

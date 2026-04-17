@@ -12,7 +12,7 @@ import ContactSupportModal from '../components/modals/ContactSupportModal';
 import styles from './SentimentPage.module.css';
 
 export default function SentimentPage() {
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [timeRange, setTimeRange] = useState('30d');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
@@ -21,22 +21,27 @@ export default function SentimentPage() {
   const products = productsData || [];
 
   const { data: sentimentData, isLoading: sentimentLoading } = useSentimentOverview(
-    selectedProduct,
+    selectedProductId,
     { timeRange }
   );
 
-  const { data: themeData, isLoading: themeLoading } = useThemeBreakdown(selectedProduct, {
+  const { data: themeData, isLoading: themeLoading } = useThemeBreakdown(selectedProductId, {
     timeRange,
   });
 
-  const { data: reviewsData, isLoading: reviewsLoading } = useReviews(selectedProduct, {
+  const { data: reviewsData, isLoading: reviewsLoading } = useReviews(selectedProductId, {
     timeRange,
   });
 
   const { data: complaintData, isLoading: complaintLoading } = useComplaintAnalysis(
-    selectedProduct,
+    selectedProductId,
     { timeRange }
   );
+
+  const handleProductChange = (selectedIds) => {
+    // ProductSelector returns array, we take first item
+    setSelectedProductId(selectedIds.length > 0 ? selectedIds[0] : null);
+  };
 
   const handleContactSupport = () => {
     setIsContactModalOpen(true);
@@ -52,15 +57,15 @@ export default function SentimentPage() {
         <div className={styles.productSelector}>
           <ProductSelector
             products={products}
-            value={selectedProduct}
-            onChange={setSelectedProduct}
+            selected={selectedProductId ? [selectedProductId] : []}
+            onChange={handleProductChange}
             placeholder="Select a product..."
             loading={productsLoading}
           />
         </div>
       </div>
 
-      {!selectedProduct ? (
+      {!selectedProductId ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🔍</div>
           <h2>Select a Product</h2>

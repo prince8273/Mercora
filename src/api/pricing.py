@@ -19,6 +19,7 @@ from src.schemas.pricing import (
 )
 from src.agents.pricing_intelligence import PricingIntelligenceAgent
 from src.auth.dependencies import get_current_active_user, get_tenant_id
+from src.cache.instance import get_cache_manager
 from decimal import Decimal
 
 router = APIRouter(prefix="/pricing", tags=["pricing"])
@@ -111,6 +112,13 @@ async def get_price_history(
     tenant_id: UUID = Depends(get_tenant_id)
 ):
     """Get price history for a product (TENANT-ISOLATED)."""
+    cache = get_cache_manager()
+    cache_key = f"price_history:{tenant_id}:{product_id}:{days}"
+    if cache:
+        cached = await cache.get(key=cache_key)
+        if cached:
+            return cached
+
     # Verify product belongs to tenant
     result = await db.execute(
         select(Product).where(
@@ -161,13 +169,16 @@ async def get_price_history(
             "reason": row[4]
         })
     
-    return {
+    result_payload = {
         "product_id": str(product_id),
         "trends": trends,
         "current_price": float(product.price),
         "period_days": days,
         "data_points": len(trends)
     }
+    if cache:
+        await cache.set(key=cache_key, value=result_payload, ttl=3600)
+    return result_payload
 
 
 @router.get("/recommendations/{product_id}")
@@ -178,6 +189,13 @@ async def get_pricing_recommendations(
     tenant_id: UUID = Depends(get_tenant_id)
 ):
     """Get pricing recommendations for a product (TENANT-ISOLATED)."""
+    cache = get_cache_manager()
+    cache_key = f"pricing_recs:{tenant_id}:{product_id}"
+    if cache:
+        cached = await cache.get(key=cache_key)
+        if cached:
+            return cached
+
     # Verify product belongs to tenant
     result = await db.execute(
         select(Product).where(
@@ -578,8 +596,8 @@ async def get_pricing_recommendations(
     
     # Limit to top 3 recommendations
     recommendations = recommendations[:3]
-    
-    return {
+
+    recs_payload = {
         "product_id": str(product_id),
         "recommendations": recommendations,
         "market_analysis": {
@@ -602,6 +620,9 @@ async def get_pricing_recommendations(
             "timestamp": datetime.utcnow().isoformat()
         }
     }
+    if cache:
+        await cache.set(key=cache_key, value=recs_payload, ttl=3600)
+    return recs_payload
 
 
 @router.get("/competitors/{product_id}")

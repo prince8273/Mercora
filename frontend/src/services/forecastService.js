@@ -5,55 +5,90 @@
 
 import { apiClient } from '../lib/apiClient'
 
+const HORIZON_MAP = { '7d': 7, '30d': 30, '60d': 60, '90d': 90 }
+
 export const forecastService = {
   /**
-   * Get forecast for a product
+   * Get demand forecast for a product
+   * Called by useDemandForecast(productId, { horizon })
    */
-  async getForecast(productId, horizon = 30) {
+  async getDemandForecast(productId, options = {}) {
+    const horizon = options?.horizon || options || '30d'
+    const days = HORIZON_MAP[horizon] || 30
     const response = await apiClient.get(`/api/v1/forecast/product/${productId}`, {
-      params: { horizon },
+      params: { forecast_horizon_days: days },
     })
-
     return response
   },
 
   /**
-   * Get seasonality pattern for a product
+   * Get inventory recommendations (alerts) for a product
+   * Called by useInventoryRecommendations(productId)
    */
-  async getSeasonality(productId) {
-    const response = await apiClient.get(`/api/v1/forecast/seasonality/${productId}`)
-    return response
-  },
-
-  /**
-   * Get inventory alerts
-   */
-  async getInventoryAlerts() {
-    const response = await apiClient.get('/api/v1/forecast/alerts')
-    return response
+  async getInventoryRecommendations(productId) {
+    try {
+      const response = await apiClient.get(`/api/v1/forecast/product/${productId}`, {
+        params: { forecast_horizon_days: 30 },
+      })
+      // Extract inventory alerts from forecast result
+      return {
+        alerts: response.alerts || [],
+        inventory_level: response.current_inventory,
+        reorder_point: response.reorder_point,
+      }
+    } catch {
+      return { alerts: [] }
+    }
   },
 
   /**
    * Get forecast accuracy metrics
+   * Called by useForecastAccuracy(productId, timeRange)
    */
-  async getAccuracyMetrics(productId) {
-    const response = await apiClient.get(`/api/v1/forecast/accuracy/${productId}`)
-    return response
+  async getForecastAccuracy(productId, timeRange = '90d') {
+    try {
+      const response = await apiClient.get(`/api/v1/forecast/product/${productId}`, {
+        params: { forecast_horizon_days: 30 },
+      })
+      return {
+        mape: response.accuracy?.mape || null,
+        rmse: response.accuracy?.rmse || null,
+        confidence: response.final_confidence || null,
+      }
+    } catch {
+      return { mape: null, rmse: null, confidence: null }
+    }
   },
 
   /**
    * Get demand-supply gap analysis
+   * Called by useDemandSupplyGap(productId, horizon)
    */
-  async getDemandSupplyGap(productId) {
-    const response = await apiClient.get(`/api/v1/forecast/gap/${productId}`)
+  async getDemandSupplyGap(productId, horizon = '30d') {
+    try {
+      const days = HORIZON_MAP[horizon] || 30
+      const response = await apiClient.get(`/api/v1/forecast/product/${productId}`, {
+        params: { forecast_horizon_days: days },
+      })
+      return response.gapAnalysis || response.gap_analysis || null
+    } catch {
+      return null
+    }
+  },
+
+  /**
+   * Generate custom forecast (mutation)
+   */
+  async generateForecast(params) {
+    const response = await apiClient.post('/api/v1/forecast', params)
     return response
   },
 
   /**
-   * Get reorder recommendations
+   * Adjust forecast parameters (mutation)
    */
-  async getReorderRecommendations() {
-    const response = await apiClient.get('/api/v1/forecast/reorder')
+  async adjustForecast(productId, adjustments) {
+    const response = await apiClient.post(`/api/v1/forecast/product/${productId}/adjust`, adjustments)
     return response
   },
 }

@@ -1,7 +1,19 @@
+@import '../styles/page-theme.css';
+
 .page {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
+  font-family: 'Syne', var(--font-sans);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 900;
+  font-family: 'Playfair Display', var(--font-serif);
+  color: var(--pt-ink);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
 }
 
 .pageHeader {
@@ -10,13 +22,6 @@
   align-items: flex-start;
   margin-bottom: 32px;
   gap: 24px;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
 }
 
 .subtitle {

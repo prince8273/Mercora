@@ -1,7 +1,22 @@
+@import '../styles/page-theme.css';
+
 .page {
   max-width: 1400px;
   margin: 0 auto;
   padding: var(--spacing-lg);
+  font-family: 'Syne', var(--font-sans);
+}
+
+.emptyTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: 'Playfair Display', var(--font-serif);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .content {

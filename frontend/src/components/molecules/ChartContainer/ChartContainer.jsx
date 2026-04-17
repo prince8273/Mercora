@@ -6,15 +6,17 @@ export const ChartContainer = ({
   children,
   title,
   loading = false,
+  isLoading = false,
   error,
   height = 400,
   showLegend = true,
   className = '',
   ...props
 }) => {
-  if (loading) {
+  const isActuallyLoading = loading || isLoading;
+  if (isActuallyLoading) {
     return (
-      <div className={`${styles.container} ${className}`} style={{ height }} {...props}>
+      <div className={`${styles.container} ${className}`} style={{ height }}>
         {title && (
           <div className={styles.header}>
             <Skeleton width="40%" height="1.5rem" />
@@ -29,7 +31,7 @@ export const ChartContainer = ({
 
   if (error) {
     return (
-      <div className={`${styles.container} ${className}`} style={{ height }} {...props}>
+      <div className={`${styles.container} ${className}`} style={{ height }}>
         {title && (
           <div className={styles.header}>
             <h3 className={styles.title}>{title}</h3>

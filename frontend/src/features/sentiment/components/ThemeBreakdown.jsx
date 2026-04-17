@@ -21,17 +21,18 @@ export default function ThemeBreakdown({ data, isLoading }) {
     if (!data?.themes) return [];
     
     return data.themes
-      .sort((a, b) => b.percentage - a.percentage)
+      .sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0))
       .slice(0, 8)
       .map((theme, index) => ({
         ...theme,
+        percentage: theme.percentage ?? 0,
         color: THEME_COLORS[index % THEME_COLORS.length],
       }));
   }, [data]);
 
   const topThemes = useMemo(() => {
     if (!data?.themes) return [];
-    return data.themes.sort((a, b) => b.percentage - a.percentage).slice(0, 10);
+    return data.themes.sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0)).slice(0, 10);
   }, [data]);
 
   if (!data?.themes || data.themes.length === 0) {
@@ -69,7 +70,7 @@ export default function ThemeBreakdown({ data, isLoading }) {
                     border: '1px solid var(--border-color)',
                     borderRadius: '6px',
                   }}
-                  formatter={(value) => `${value.toFixed(1)}%`}
+                  formatter={(value) => `${(value ?? 0).toFixed(1)}%`}
                 />
                 <Bar
                   dataKey="percentage"
@@ -103,13 +104,13 @@ export default function ThemeBreakdown({ data, isLoading }) {
             >
               <div className={styles.themeHeader}>
                 <span className={styles.themeName}>{theme.name}</span>
-                <span className={styles.themePercentage}>{theme.percentage.toFixed(1)}%</span>
+                <span className={styles.themePercentage}>{(theme.percentage ?? 0).toFixed(1)}%</span>
               </div>
               <div className={styles.themeBar}>
                 <div
                   className={styles.themeBarFill}
                   style={{
-                    width: `${theme.percentage}%`,
+                    width: `${theme.percentage ?? 0}%`,
                     background: THEME_COLORS[index % THEME_COLORS.length],
                   }}
                 />

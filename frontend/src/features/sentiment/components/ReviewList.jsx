@@ -41,7 +41,7 @@ export default function ReviewList({ data, isLoading }) {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'date':
-          return new Date(b.date) - new Date(a.date);
+          return new Date(b.created_at || b.date || 0) - new Date(a.created_at || a.date || 0);
         case 'rating':
           return b.rating - a.rating;
         case 'helpfulness':

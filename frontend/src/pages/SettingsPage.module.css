@@ -1,7 +1,10 @@
+@import '../styles/page-theme.css';
+
 .page {
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  font-family: 'Syne', var(--font-sans);
 }
 
 .container {

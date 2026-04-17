@@ -46,7 +46,8 @@ export const useReviews = (productId, filters = {}) => {
     queryKey: queryKeys.sentiment.reviews(productId, filters),
     queryFn: () => sentimentService.getReviews(productId, filters),
     enabled: !!productId,
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
+    refetchOnMount: true,
   });
 };
 

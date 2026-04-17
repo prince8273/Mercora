@@ -1,21 +1,26 @@
+@import '../styles/page-theme.css';
+
 .page {
   max-width: 1400px;
   margin: 0 auto;
   padding: var(--spacing-sm);
-  font-family: var(--font-sans);
+  font-family: 'Syne', var(--font-sans);
 }
 
 /* Typography improvements - even smaller fonts */
 .page h1 {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 900;
+  font-family: 'Playfair Display', var(--font-serif);
   color: #1f2937;
   margin-bottom: 0.25rem;
+  letter-spacing: -0.4px;
 }
 
 .page h2 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: 'Playfair Display', var(--font-serif);
   color: #1f2937;
   margin-bottom: 0.5rem;
 }

@@ -16,7 +16,9 @@ export default function ReviewCard({ review }) {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'Invalid Date';
     const date = new Date(dateString);
+    if (isNaN(date)) return 'Invalid Date';
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -39,7 +41,7 @@ export default function ReviewCard({ review }) {
           <div className={styles.meta}>
             <span>{review.author || 'Anonymous'}</span>
             <span>•</span>
-            <span>{formatDate(review.date)}</span>
+            <span>{formatDate(review.date || review.created_at)}</span>
           </div>
         </div>
         <div className={`${styles.sentiment} ${styles[review.sentiment]}`}>

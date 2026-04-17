@@ -69,6 +69,7 @@ class CacheManager:
         self.use_memory_fallback = use_memory_fallback
         self._redis: Optional[redis.Redis] = None
         self._memory_cache: Dict[str, Any] = {}  # In-memory fallback
+        self._redis_failed: bool = False  # Stop retrying after first timeout
         self._metrics = {
             'hits': 0,
             'misses': 0,
@@ -93,8 +94,8 @@ class CacheManager:
                     self.redis_url,
                     encoding="utf-8",
                     decode_responses=True,
-                    socket_connect_timeout=5,  # 5 second connection timeout
-                    socket_timeout=5,  # 5 second operation timeout
+                    socket_connect_timeout=2,
+                    socket_timeout=2,
                     retry_on_timeout=False
                 )
                 
@@ -108,6 +109,7 @@ class CacheManager:
                 logger.info("Redis cache connected successfully with LRU eviction")
             except asyncio.TimeoutError:
                 logger.error(f"Redis connection timeout - server not reachable at {self.redis_url}")
+                self._redis_failed = True
                 if self.use_memory_fallback:
                     logger.warning("Using in-memory cache fallback")
                 else:
@@ -115,6 +117,7 @@ class CacheManager:
                 self._redis = None
             except Exception as e:
                 logger.error(f"Failed to connect to Redis: {e}")
+                self._redis_failed = True
                 if self.use_memory_fallback:
                     logger.warning("Using in-memory cache fallback")
                 else:
@@ -188,7 +191,7 @@ class CacheManager:
         Returns:
             Cached data or None if not found or stale
         """
-        if not self._redis:
+        if not self._redis and not self._redis_failed:
             await self.connect()
         
         # Determine which API pattern is being used
@@ -280,7 +283,7 @@ class CacheManager:
         Returns:
             True if successful, False otherwise
         """
-        if not self._redis:
+        if not self._redis and not self._redis_failed:
             await self.connect()
         
         # Determine which API pattern is being used
@@ -363,7 +366,7 @@ class CacheManager:
         Returns:
             True if deleted, False otherwise
         """
-        if not self._redis:
+        if not self._redis and not self._redis_failed:
             await self.connect()
         
         # Determine which API pattern is being used
@@ -422,7 +425,7 @@ class CacheManager:
         Returns:
             Number of entries invalidated
         """
-        if not self._redis:
+        if not self._redis and not self._redis_failed:
             await self.connect()
         
         # Determine which API pattern is being used
@@ -561,7 +564,7 @@ class CacheManager:
         Returns:
             Number of entries cleared
         """
-        if not self._redis:
+        if not self._redis and not self._redis_failed:
             await self.connect()
         
         pattern = f"*:{tenant_id}:*"
@@ -607,7 +610,7 @@ class CacheManager:
             True if healthy, False otherwise
         """
         try:
-            if not self._redis:
+            if not self._redis and not self._redis_failed:
                 await self.connect()
             
             # If still no Redis after connect attempt, return False

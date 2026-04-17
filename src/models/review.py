@@ -50,6 +50,7 @@ class Review(Base):
         Index('idx_reviews_tenant', 'tenant_id'),
         Index('idx_reviews_product', 'product_id'),
         Index('idx_reviews_sentiment', 'sentiment'),
+        Index('idx_reviews_product_tenant_date', 'product_id', 'tenant_id', 'created_at'),
     )
     
     def __repr__(self):

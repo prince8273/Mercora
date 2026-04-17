@@ -62,20 +62,34 @@ async def lifespan(app: FastAPI):
     cache_manager = None
     if settings.cache_enabled:
         try:
-            cache_manager = CacheManager(redis_url=settings.redis_url)
-            await cache_manager.connect()
+            cache_manager = CacheManager(
+                redis_url=settings.redis_url,
+                use_memory_fallback=True
+            )
+            # Connect with a hard timeout so it never blocks startup
+            try:
+                import asyncio as _asyncio
+                await _asyncio.wait_for(cache_manager.connect(), timeout=3.0)
+            except _asyncio.TimeoutError:
+                cache_manager._redis = None
+                cache_manager._redis_failed = True
+                logger.warning("⚠️  Redis connection timed out — using in-memory cache fallback")
+
             if cache_manager._redis:
-                logger.info("Redis cache initialized")
-                set_cache_manager(cache_manager)
-                
-                # Initialize event-driven cache invalidation
-                initialize_cache_invalidation(cache_manager)
-                logger.info("Cache invalidation system initialized")
+                logger.info("✅ Redis cache connected")
             else:
-                logger.warning("Redis cache unavailable. Continuing without cache.")
-                set_cache_manager(None)
+                logger.warning("⚠️  Redis unavailable — using in-memory cache fallback")
+
+            set_cache_manager(cache_manager)
+            initialize_cache_invalidation(cache_manager)
+
+            # Quick self-test
+            await cache_manager.set(key="startup:ping", value="ok", ttl=60)
+            val = await cache_manager.get(key="startup:ping")
+            logger.info(f"✅ Cache self-test: {'PASS' if val == 'ok' else 'FAIL'}")
+
         except Exception as e:
-            logger.warning(f"Failed to initialize Redis cache: {e}. Continuing without cache.")
+            logger.warning(f"Failed to initialize cache: {e}. Continuing without cache.")
             set_cache_manager(None)
     else:
         logger.info("Cache disabled in configuration")

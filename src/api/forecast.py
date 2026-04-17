@@ -1,7 +1,7 @@
 """Demand Forecast API endpoints"""
 from uuid import UUID
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel, Field
@@ -12,6 +12,7 @@ from src.models.sales_record import SalesRecord
 from src.models.user import User
 from src.agents.demand_forecast_agent import DemandForecastAgent
 from src.auth.dependencies import get_current_active_user, get_tenant_id
+from src.cache.instance import get_cache_manager
 
 router = APIRouter(prefix="/forecast", tags=["forecast"])
 
@@ -147,30 +148,20 @@ async def generate_demand_forecast(
 @router.get("/product/{product_id}", response_model=dict)
 async def get_product_forecast(
     product_id: UUID,
-    forecast_horizon_days: int = 30,
+    forecast_horizon_days: int = Query(default=30, ge=7, le=90),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
     tenant_id: UUID = Depends(get_tenant_id)
 ) -> dict:
-    """
-    Get demand forecast for a single product (TENANT-ISOLATED).
-    
-    Args:
-        product_id: Product UUID
-        forecast_horizon_days: Number of days to forecast (default: 30)
-        db: Database session
-        current_user: Authenticated user
-        tenant_id: Tenant ID from JWT token
-        
-    Returns:
-        Forecast result dictionary
-    """
-    # Validate horizon
-    if not (7 <= forecast_horizon_days <= 90):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Forecast horizon must be between 7 and 90 days"
-        )
+    """Get demand forecast for a single product with cache."""
+
+    cache = get_cache_manager()
+    cache_key = f"forecast:{tenant_id}:{product_id}:{forecast_horizon_days}"
+
+    if cache:
+        cached = await cache.get(key=cache_key)
+        if cached:
+            return cached
     
     # Fetch product (TENANT-FILTERED)
     result = await db.execute(
@@ -222,8 +213,11 @@ async def get_product_forecast(
             forecast_horizon_days=forecast_horizon_days,
             current_inventory=product.inventory_level
         )
-        
-        return forecast_result.to_dict()
+        result = forecast_result.to_dict()
+        # Cache for 1 hour — forecasts are expensive to compute
+        if cache:
+            await cache.set(key=cache_key, value=result, ttl=3600)
+        return result
     
     except Exception as e:
         raise HTTPException(

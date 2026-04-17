@@ -1,0 +1,555 @@
+/* ── NEW OVERVIEW DESIGN — trial basis ── */
+/* Fonts loaded via index.html or index.css — Playfair Display, Syne, IBM Plex Mono */
+
+.ov-root {
+  --cream: #f5f0e8;
+  --ink: #0e0e0e;
+  --muted: #7a7060;
+  --border: #d8d0c0;
+  --coral: #e8432d;
+  --amber: #e8a020;
+  --green: #1a9e5e;
+  --surface: #ede8df;
+  --white: #fdfaf5;
+
+  font-family: 'Syne', 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BAND ── */
+.ov-topband {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  height: 58px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.ov-topband-left {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.ov-topband-left h1 {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin: 0;
+}
+.ov-topband-date {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.ov-topband-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ov-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all 0.18s;
+  letter-spacing: 0.3px;
+}
+.ov-refresh-btn:hover {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+.ov-notif-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  position: relative;
+  transition: all 0.2s;
+}
+.ov-notif-btn:hover { background: var(--surface); }
+.ov-notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+  border: 2px solid var(--white);
+}
+
+/* ── CONTENT ── */
+.ov-content {
+  padding: 28px 32px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── PERIOD ROW ── */
+.ov-period-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.ov-period-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.ov-period-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--surface);
+  border-radius: 7px;
+  padding: 3px;
+  border: 1px solid var(--border);
+}
+.ov-ptab {
+  padding: 5px 16px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.ov-ptab.active {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+/* ── KPI GRID ── */
+.ov-kpi-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  width: 100%;
+}
+.ov-kpi-cell {
+  background: var(--white);
+  padding: 18px 16px;
+  position: relative;
+  transition: background 0.2s;
+  overflow: hidden;
+  animation: ovFadeSlide 0.4s ease both;
+}
+.ov-kpi-cell:hover { background: #f9f5ee; }
+.ov-kpi-cell.hero {
+  background: var(--ink);
+  color: var(--cream);
+}
+.ov-kpi-cell.hero:hover { background: #1a1a1a; }
+.ov-kpi-cell.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,67,45,.25), transparent 70%);
+  pointer-events: none;
+}
+.ov-kpi-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ov-kpi-cell.hero .ov-kpi-tag { color: #7a7060; }
+.ov-kpi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ov-kpi-badge.up { background: rgba(26,158,94,.15); color: var(--green); }
+.ov-kpi-badge.dn { background: rgba(232,67,45,.12); color: var(--coral); }
+.ov-kpi-badge.nu { background: var(--surface); color: var(--muted); }
+.ov-kpi-cell.hero .ov-kpi-badge.up { background: rgba(26,158,94,.25); }
+.ov-kpi-val {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(22px, 2.5vw, 36px);
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.ov-kpi-cell.hero .ov-kpi-val { font-size: clamp(26px, 3vw, 42px); }
+.ov-kpi-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.ov-kpi-cell.hero .ov-kpi-sub { color: #7a7060; }
+
+/* ── MAIN GRID ── */
+.ov-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* ── CHART CARD ── */
+.ov-chart-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.ov-chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 22px 26px 0;
+}
+.ov-chart-head h2 {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0;
+  color: var(--ink);
+}
+.ov-chart-head p {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.ov-chart-peak {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.ov-chart-legend {
+  display: flex;
+  gap: 20px;
+  padding: 12px 26px 6px;
+}
+.ov-cl-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.ov-cl-line {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+}
+.ov-chart-area {
+  padding: 4px 20px 18px;
+}
+.ov-chart-area canvas {
+  display: block;
+  width: 100% !important;
+}
+
+/* ── RIGHT PANEL ── */
+.ov-right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── ALERTS CARD ── */
+.ov-alerts-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  flex: 1;
+}
+.ov-alerts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.ov-alerts-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0;
+  color: var(--ink);
+}
+.ov-alerts-badge {
+  background: var(--green);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ov-alerts-badge.has-alerts {
+  background: var(--coral);
+}
+.ov-alerts-ok {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  text-align: center;
+}
+.ov-ok-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 12px;
+  animation: ovRingPulse 3s ease-in-out infinite;
+}
+.ov-alerts-ok p {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.ov-alerts-ok span {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.ov-alert-list {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ov-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(232,67,45,.05);
+  border: 1px solid rgba(232,67,45,.15);
+}
+.ov-alert-ico { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.ov-alert-txt strong { font-size: 12px; font-weight: 600; display: block; margin-bottom: 2px; color: var(--ink); }
+.ov-alert-txt span { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+/* ── INSIGHTS CARD ── */
+.ov-insights-card {
+  background: var(--ink);
+  border-radius: 14px;
+  overflow: hidden;
+  color: var(--cream);
+}
+.ov-insights-head {
+  padding: 18px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ov-insights-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0;
+  color: var(--cream);
+}
+.ov-insights-count {
+  background: var(--coral);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ov-insight-list {
+  padding: 14px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ov-insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 13px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ov-insight-item:hover { background: rgba(255,255,255,.1); }
+.ov-ins-ico {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.ov-ins-ico.g { background: rgba(26,158,94,.2); }
+.ov-ins-ico.c { background: rgba(232,67,45,.2); }
+.ov-ins-ico.a { background: rgba(232,160,32,.2); }
+.ov-ins-txt strong {
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+  color: var(--cream);
+}
+.ov-ins-txt span {
+  font-size: 11px;
+  color: #9a9080;
+  line-height: 1.4;
+}
+
+/* ── BOTTOM ROW ── */
+.ov-bottom-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.ov-mini-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  animation: ovFadeSlide 0.4s ease both;
+}
+.ov-mini-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+.ov-mini-card.c1::after { background: linear-gradient(90deg, var(--coral), var(--amber)); }
+.ov-mini-card.c2::after { background: linear-gradient(90deg, var(--green), #5ad4a0); }
+.ov-mini-card.c3::after { background: linear-gradient(90deg, #5b8cf7, #a78bfa); }
+.ov-mini-label {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.ov-mini-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.ov-mini-trend {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ov-mini-trend .up { color: var(--green); font-weight: 700; }
+.ov-mini-trend .dn { color: var(--coral); font-weight: 700; }
+.ov-mini-bar-wrap { margin-top: 14px; }
+.ov-mini-bar-lbl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.ov-mini-bar-track {
+  background: var(--surface);
+  border-radius: 4px;
+  height: 5px;
+  overflow: hidden;
+}
+.ov-mini-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes ovFadeSlide {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ovRingPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(26,158,94,.2); }
+  50%      { box-shadow: 0 0 0 10px rgba(26,158,94,0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .ov-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .ov-main-grid { grid-template-columns: 1fr; }
+  .ov-right-panel { flex-direction: row; }
+  .ov-alerts-card, .ov-insights-card { flex: 1; }
+}
+@media (max-width: 768px) {
+  .ov-content { padding: 16px; }
+  .ov-kpi-grid { grid-template-columns: 1fr 1fr; }
+  .ov-bottom-row { grid-template-columns: 1fr; }
+  .ov-right-panel { flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .ov-kpi-grid { grid-template-columns: 1fr; }
+}

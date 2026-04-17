@@ -11,6 +11,7 @@ import AboutUsPage from '../pages/AboutUsPage'
 import LoginPage from '../pages/LoginPage'
 import SignupPage from '../pages/SignupPage'
 import OverviewPage from '../pages/OverviewPage'
+import OverviewPageNew from '../pages/OverviewPageNew'
 import IntelligencePage from '../pages/IntelligencePage'
 import PricingPage from '../pages/PricingPage'
 import SentimentPage from '../pages/SentimentPage'
@@ -107,6 +108,7 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="/dashboard/overview" replace />} />
         <Route path="overview" element={<PageErrorBoundary><OverviewPage /></PageErrorBoundary>} />
+        <Route path="overview-new" element={<PageErrorBoundary><OverviewPageNew /></PageErrorBoundary>} />
         <Route path="intelligence" element={<PageErrorBoundary><IntelligencePage /></PageErrorBoundary>} />
         <Route path="intelligence/breakdown" element={<PageErrorBoundary><QueryBreakdownPage /></PageErrorBoundary>} />
         <Route path="pricing" element={<PageErrorBoundary><PricingPage /></PageErrorBoundary>} />
